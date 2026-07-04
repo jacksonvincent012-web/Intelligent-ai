@@ -88,6 +88,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .chat-msg h1,.chat-msg h2,.chat-msg h3{font-size:15px;margin:8px 0 4px;color:var(--text)}
 .chat-msg p{margin:4px 0}
 .chat-msg .cb-copy,.chat-msg .cb-prev{position:absolute;top:4px;right:4px;padding:2px 8px;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit}
+.msg-copy{position:absolute;bottom:4px;right:4px;padding:2px 8px;font-size:9px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit;opacity:0;transition:opacity .15s}
+.chat-msg:hover .msg-copy{opacity:1}.msg-copy:hover{border-color:var(--accent);color:var(--text)}
 .chat-msg .cb-prev{right:46px}.chat-msg .cb-copy:hover,.chat-msg .cb-prev:hover{border-color:var(--accent);color:var(--text)}
 .chat-msg.tool-call{padding:2px 0;font-size:11px;color:var(--dim)}
 .chat-msg.tool-call.err{color:var(--red)}
@@ -790,7 +792,7 @@ function renderMarkdown(t){
   s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/\*([^*]+)\*/g,'<i>$1</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/\n{2,}/g,'</p><p>');s=s.replace(/\n/g,'<br>')
   return '<p>'+s+'</p>'
 }
-function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
+function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);if(role==='assistant'){let cb=document.createElement('button');cb.className='msg-copy';cb.textContent='Copy';cb.onclick=function(){navigator.clipboard.writeText(d.textContent).then(()=>{cb.textContent='Copied!';setTimeout(()=>cb.textContent='Copy',1500)})};d.appendChild(cb)}c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
 function copyCode(btn){let pre=btn.previousElementSibling;if(!pre||pre.tagName!='PRE')pre=btn.previousElementSibling?.previousElementSibling;let code=pre?.textContent||'';navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
 function renderFileChips(){let el=document.getElementById('file-preview');if(!pendingFiles.length){el.innerHTML='';return}el.innerHTML=pendingFiles.map((f,i)=>'<div class="file-chip" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;margin:2px 4px"><span>'+esc(f.name)+'</span><span class="rm" style="cursor:pointer;color:var(--dim)" onclick="removeFile('+i+')">x</span></div>').join('')}
 async function uploadFiles(files){for(let f of files){let fd=new FormData();fd.append('file',f);fd.append('session_id',sid);try{let r=await fetch('/api/upload',{method:'POST',body:fd});let d=await r.json();if(d.ok){pendingFiles.push(d.file);renderFileChips()}else addMsg('Upload error: '+d.error,'assistant')}catch(e){addMsg('Upload failed: '+e.message,'assistant')}}}
@@ -814,12 +816,40 @@ async function sendMsg(){
     let r
     if(appMode==='cloud'){
       const model=document.getElementById('modelSelect').value||'openai/gpt-4o-mini'
-      r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI agent.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
+      r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.
+
+## How you operate
+1. **Explore first** — Before editing code, search the codebase with tools like glob/grep to understand file structure, conventions, and existing patterns. Read relevant files before making changes.
+2. **Be concise** — Answer directly in 1-4 sentences when possible. No preamble, no postamble, no explanations unless asked.
+3. **Follow conventions** — Match the code style, libraries, and patterns of the project. Never assume a library exists; check package.json or imports first.
+4. **Explain commands** — When you run a command, say what it does and why.
+5. **Be proactive** — After fixing one issue, suggest what to check next (lint, tests, typecheck).
+6. **Security** — Never expose or commit secrets/keys.
+7. **Code style** — No comments in code unless asked. No emojis unless requested.
+8. **Markdown** — Use ``` for code blocks with language tags. Use **bold** for emphasis. Use `inline code` for filenames, commands, and short snippets.
+9. **File references** — Reference files as `path/file.ext:line_number` when pointing to specific code.
+10. **Verification** — After making changes, suggest how to verify (linting, tests, type check commands).
+
+You have access to tools: glob (find files by pattern), grep (search file contents), read (view files), edit (modify files), write (create files), bash (run commands), web search/fetch (get info). Use them like an engineer exploring and fixing a codebase.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
       if(!r.ok){let err;try{err=(await r.json()).error}catch(e){err=await r.text()};addMsg('Cloud Error: '+err,'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
     }else if(appMode==='api'){
       const model=document.getElementById('modelSelect').value
       const baseUrl=apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'
-      r=await origFetch(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI agent.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
+      r=await origFetch(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.
+
+## How you operate
+1. **Explore first** — Before editing code, search the codebase with tools like glob/grep to understand file structure, conventions, and existing patterns. Read relevant files before making changes.
+2. **Be concise** — Answer directly in 1-4 sentences when possible. No preamble, no postamble, no explanations unless asked.
+3. **Follow conventions** — Match the code style, libraries, and patterns of the project. Never assume a library exists; check package.json or imports first.
+4. **Explain commands** — When you run a command, say what it does and why.
+5. **Be proactive** — After fixing one issue, suggest what to check next (lint, tests, typecheck).
+6. **Security** — Never expose or commit secrets/keys.
+7. **Code style** — No comments in code unless asked. No emojis unless requested.
+8. **Markdown** — Use ``` for code blocks with language tags. Use **bold** for emphasis. Use `inline code` for filenames, commands, and short snippets.
+9. **File references** — Reference files as `path/file.ext:line_number` when pointing to specific code.
+10. **Verification** — After making changes, suggest how to verify (linting, tests, type check commands).
+
+You have access to tools: glob (find files by pattern), grep (search file contents), read (view files), edit (modify files), write (create files), bash (run commands), web search/fetch (get info). Use them like an engineer exploring and fixing a codebase.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
       if(!r.ok){let err=await r.text();addMsg('API Error: '+(JSON.parse(err).error?.message||err),'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
     }else{
       backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'');localStorage.setItem('vmBackendUrl',backendUrl)
