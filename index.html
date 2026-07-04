@@ -43,7 +43,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 
 /* MAIN */
 #main{flex:1;display:flex;min-width:0;position:relative}
-.panel-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.06;pointer-events:none;z-index:0}
+.panel-bg{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.08}
+#bg-chat{background:radial-gradient(ellipse at 20% 50%,rgba(63,185,80,.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(88,166,255,.08) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(210,168,255,.06) 0%,transparent 50%)}
+#bg-review{background:radial-gradient(ellipse at 80% 30%,rgba(88,166,255,.1) 0%,transparent 50%),radial-gradient(ellipse at 20% 70%,rgba(63,185,80,.06) 0%,transparent 50%)}
+#bg-files{background:radial-gradient(ellipse at 50% 50%,rgba(210,168,255,.08) 0%,transparent 50%)}
+#bg-layer{background:radial-gradient(ellipse at 30% 40%,rgba(241,76,76,.08) 0%,transparent 50%),radial-gradient(ellipse at 70% 60%,rgba(0,0,0,.3) 0%,transparent 50%)}
+#bg-browser{background:radial-gradient(ellipse at 50% 50%,rgba(88,166,255,.06) 0%,transparent 50%)}
+#bg-library{background:radial-gradient(ellipse at 50% 30%,rgba(255,166,87,.06) 0%,transparent 50%)}
 
 /* PANEL CHAT */
 #panel-chat{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;z-index:1}
@@ -435,8 +441,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 
 <script>
 const CATS={recon:5,scanning:4,exploitation:4,post:4,web:3,network:6}
-const BG_IMAGES=[]
-const BG_PANELS=['bg-chat','bg-review','bg-files']
 
 let sid=localStorage.getItem('vms')||crypto.randomUUID()
 localStorage.setItem('vms',sid)
