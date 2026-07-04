@@ -880,7 +880,7 @@ async function applyEdit(btn){
     // Write back via exec (create temp file approach) or direct API
     let w=await fetch(backendUrl+'/api/exec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:'Set-Content -LiteralPath "'+path.replace(/"/g,'')+'" -Value '''+newContent.replace(/'/g,'''')+''' -Force'})})
     let wd=await w.json()
-    if(wd.stdout!==null||wd.stderr===''){btn.textContent='Applied!';btn.className='sr-apply done';btn.style.background='var(--green)'}
+    if(wd.stdout!==null||wd.stderr===''){btn.textContent='Applied!';btn.className='sr-apply done';btn.style.background='var(--green)';try{let cr=await fetch(backendUrl+'/api/git/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});let cd=await cr.json();if(cd.commit_hash||cd.message)addMsg('Committed: '+(cd.message||'').slice(0,60),'assistant')}catch(_){}}
     else{btn.textContent='Write error';btn.className='sr-apply done';btn.style.background='var(--red)'}
   }catch(e){btn.textContent='Error: '+e.message;btn.className='sr-apply done';btn.style.background='var(--red)'}
 }
