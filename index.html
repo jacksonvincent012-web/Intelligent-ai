@@ -307,7 +307,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         <label>Mode:</label>
         <button class="mode-tab active" id="modeBackend" onclick="setMode('backend')">Backend</button>
         <button class="mode-tab" id="modeApi" onclick="setMode('api')">API Key</button>
-        <button class="mode-tab" id="modeCloud" onclick="setAppMode('cloud')" style="background:var(--green);color:#000;font-weight:600">Cloud</button>
+
         <div id="apiSettings">
           <select id="apiProvider" style="width:auto"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option></select>
           <input id="apiKeyInput" type="password" placeholder="sk-..." style="width:140px">
@@ -459,7 +459,7 @@ let libBooks=[],libReaderActive=false
 let notifiedEvents=new Set()
 let backendUrl=localStorage.getItem('vmBackendUrl')||'http://127.0.0.1:8765'
 let apiKey=localStorage.getItem('vmApiKey')||'',apiProvider=localStorage.getItem('vmApiProvider')||'openai'
-let appMode=localStorage.getItem('vmAppMode')||'backend'
+let appMode=localStorage.getItem('vmAppMode')||'cloud'
 
 // Patch fetch
 const origFetch=window.fetch
@@ -509,7 +509,6 @@ function setAppMode(m){
   appMode=m;localStorage.setItem('vmAppMode',m)
   document.getElementById('modeBackend').className='mode-tab'+(m==='backend'?' active':'')
   document.getElementById('modeApi').className='mode-tab'+(m==='api'?' active':'')
-  let cl=document.getElementById('modeCloud');if(cl)cl.className='mode-tab'+(m==='cloud'?' active':'')
   document.getElementById('apiSettings').style.display=m==='api'?'flex':'none'
   document.getElementById('backendUrl').style.display=m==='backend'?'block':'none'
   let enabled=m==='cloud'||(m==='api'&&apiKey)||m==='backend'
