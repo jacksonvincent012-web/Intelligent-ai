@@ -387,7 +387,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
           </div>
         </div>
         <div id="git-content" style="flex:1;overflow:auto;padding:4px 0"></div>
-        <div id="git-commit-bar" style="display:none;padding:4px 8px;border-top:1px solid var(--border)"><input id="git-commit-input" type="text" placeholder="Commit message..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')gitCommit()"><button onclick="gitCommit()" style="padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Commit</button></div>
+        <div id="git-commit-bar" style="display:none;padding:4px 8px;border-top:1px solid var(--border);gap:4px"><input id="git-commit-input" type="text" placeholder="Commit message..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:4px 6px;color:var(--text);font-size:11px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')gitCommit()"><button onclick="aiSuggestCommit()" style="padding:4px 8px;background:var(--accent);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:9px;font-family:inherit" title="AI-generate commit message from changes">AI</button><button onclick="gitCommit()" style="padding:4px 10px;background:var(--green);color:#000;border:none;border-radius:3px;font-weight:600;cursor:pointer;font-size:10px;font-family:inherit">Commit</button></div>
       </div>
       <div id="rtab-google" class="rtab">
         <div id="gsearch-header">
@@ -585,14 +585,18 @@ async function loadFileTree(dir){
     let r=await fetch('/api/files?dir='+encodeURIComponent(dir))
     let d=await r.json()
     if(d.error){el.innerHTML='<div style="color:var(--red);padding:8px;font-size:11px">Error: '+esc(d.error)+'</div>';return}
-    el.innerHTML=renderTree(d)
+    // Fetch git status for markers
+    let gs={};try{let gr=await fetch('/api/git/status');let gd=await gr.json();if(!gd.error)gd.files.forEach(f=>{gs[f.path]=f.status})}catch(_){}
+    el.innerHTML=renderTree(d,0,gs)
   }catch(ex){el.textContent='Error: '+ex.message}
 }
-function renderTree(items,depth=0){
+function renderTree(items,depth=0,gitStatus={}){
   if(!items||!Array.isArray(items))return'<div style="color:var(--dim);padding:8px;font-size:11px">Empty</div>'
   return items.map(i=>{
+    let gs=gitStatus[i.path]||''
+    let gsIcon=gs==='M'?'<span style="color:var(--accent);font-size:9px;margin-right:2px">M</span>':gs==='A'?'<span style="color:var(--green);font-size:9px;margin-right:2px">A</span>':gs==='D'?'<span style="color:var(--red);font-size:9px;margin-right:2px">D</span>':gs==='??'?'<span style="color:#f0883e;font-size:9px;margin-right:2px">?</span>':''
     if(i.type==='dir')return'<div class="ft-item" style="padding-left:'+(8+depth*16)+'px" onclick="toggleDir(this,\''+escJs(i.path)+'\')"><span class="ft-arrow">&#9654;</span><span class="ft-icon">&#128193;</span>'+esc(i.name)+'</div><div class="ft-children" style="display:none"></div>'
-    return'<div class="ft-item" style="padding-left:'+(8+depth*16)+'px" onclick="openFile(\''+escJs(i.path)+'\')"><span class="ft-icon">&#128196;</span>'+esc(i.name)+'</div>'
+    return'<div class="ft-item" style="padding-left:'+(8+depth*16)+'px" onclick="openFile(\''+escJs(i.path)+'\')">'+gsIcon+'<span class="ft-icon">&#128196;</span>'+esc(i.name)+'</div>'
   }).join('')
 }
 async function toggleDir(el,path){
@@ -647,7 +651,7 @@ async function refreshMiniGit(){
     document.getElementById('git-remote').textContent=sd.remote||''
     if(sd.files.length===0){gc.innerHTML='<span style="color:var(--dim)">No changes</span>';return}
     gc.innerHTML='<div style="margin-bottom:3px;font-size:10px;color:var(--dim)">'+sd.files.length+' changed</div>'+
-      sd.files.map(f=>'<div class="git-file" onclick="showMiniDiff(\''+escJs(f.path)+'\')"><span class="gst '+(f.status==='?'?'??':f.status)+'">'+f.status+'</span><span>'+esc(f.path)+'</span></div>').join('')+
+      sd.files.map(f=>'<div class="git-file" onclick="showMiniDiff(\''+escJs(f.path)+'\')"><span class="gst '+(f.status==='?'?'??':f.status)+'">'+f.status+'</span><span>'+esc(f.path)+'</span><span style="margin-left:auto;display:flex;gap:4px"><button onclick="event.stopPropagation();gitBlame(\''+escJs(f.path)+'\')" style="padding:1px 5px;font-size:8px;background:transparent;border:1px solid var(--border);border-radius:2px;color:var(--dim);cursor:pointer" title="Git blame">B</button></span></div>').join('')+
       '<div id="git-diff-area"></div>'
   }catch(ex){gc.innerHTML='<span style="color:var(--red)">'+ex.message+'</span>'}
 }
@@ -675,10 +679,18 @@ async function showMiniLog(){
   let gc=document.getElementById('git-content')
   gc.innerHTML='<span style="color:var(--dim)">loading...</span>'
   try{
-    let r=await fetch('/api/git/log?limit=15');let d=await r.json()
+    let r=await fetch('/api/git/log?limit=20');let d=await r.json()
     if(d.error){gc.innerHTML='<span style="color:var(--red)">'+d.error+'</span>';return}
-    gc.innerHTML='<div class="git-log">'+d.commits.map(c=>'<div class="git-log-entry"><span class="glh">'+c.hash+'</span> <span class="glm">'+esc(c.message)+'</span></div>').join('')+'</div>'
+    gc.innerHTML='<div class="git-log">'+(d.commits||d.log||[]).map(c=>{
+      let h=c.hash||c.commit||'',msg=c.message||c.msg||'',date=c.date||c.author_date||'',author=c.author||c.author_name||''
+      return'<div class="git-log-entry" onclick="showCommitDiff(\''+h+'\')"><span class="glh">'+h.slice(0,8)+'</span> <span class="glm">'+esc(msg.split('\n')[0])+'</span><br><span style="font-size:8px;color:#555">'+esc(author)+(date?' &middot; '+esc(date):'')+'</span></div>'
+    }).join('')+'</div>'
   }catch(ex){gc.innerHTML='<span style="color:var(--red)">'+ex.message+'</span>'}
+}
+async function showCommitDiff(hash){
+  try{let r=await fetch('/api/git/diff?commit='+encodeURIComponent(hash));let d=await r.json()
+    if(d.diff){let area=document.getElementById('git-diff-area')||document.getElementById('git-content');area.innerHTML='<div class="git-diff" style="padding:8px;font-size:10px">'+esc(diffHighlight(d.diff))+'</div>'}
+  }catch(_){}
 }
 async function gitCommit(){
   let inp=document.getElementById('git-commit-input'),msg=inp.value.trim()
@@ -724,6 +736,30 @@ async function showBranchDialog(){
   }catch(e){gc.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>'}
 }
 async function gitBranch(action){let name=document.getElementById('branch-name')?.value,out=document.getElementById('branch-output');if(!name&&action!=='list'){out.textContent='Enter name';return}out.textContent='Processing...';try{let r=await fetch('/api/git/branch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,name})});let d=await r.json();if(d.ok){out.textContent='Done';refreshMiniGit()}else out.textContent='Error: '+d.error}catch(e){out.textContent='Error: '+e.message}}
+async function gitBlame(file){
+  let gc=document.getElementById('git-content');gc.innerHTML='<span style="color:var(--dim)">Loading blame...</span>'
+  try{let r=await fetch('/api/git/blame?file='+encodeURIComponent(file));let d=await r.json()
+    if(d.error){gc.innerHTML='<span style="color:var(--red)">'+d.error+'</span>';return}
+    let lines=(d.lines||d.annotations||[]).map(l=>{
+      let h=l.commit?.slice(0,7)||'      ',a=l.author||'?',dt=l.date||'',txt=l.line||''
+      return'<div style="display:flex;border-bottom:1px solid var(--border);font-size:10px;font-family:monospace"><span style="width:60px;padding:1px 4px;color:var(--accent);overflow:hidden">'+esc(h)+'</span><span style="width:80px;padding:1px 4px;color:var(--dim);overflow:hidden">'+esc(a)+'</span><span style="flex:1;padding:1px 4px;color:var(--text);white-space:pre">'+esc(txt)+'</span></div>'
+    }).join('')
+    gc.innerHTML='<div style="padding:4px 6px;font-size:10px;font-weight:500;border-bottom:1px solid var(--border)">Blame: '+esc(file)+' <button onclick="refreshMiniGit()" style="margin-left:8px;padding:1px 6px;background:var(--surface);border:1px solid var(--border);border-radius:2px;color:var(--dim);cursor:pointer;font-size:9px;font-family:inherit">Back</button></div>'+lines
+  }catch(e){gc.innerHTML='<span style="color:var(--red)">'+e.message+'</span>'}
+}
+async function aiSuggestCommit(){
+  let btn=event.target;btn.disabled=true;btn.textContent='...'
+  try{
+    let r=await fetch('/api/git/diff');let d=await r.json()
+    if(!d.diff){btn.disabled=false;btn.textContent='AI';return}
+    let diff=d.diff.slice(0,3000)
+    let sugR=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai/gpt-4o-mini',messages:[{role:'user',content:'Generate a concise git commit message (max 72 chars, imperative mood, no quotes) for this diff:\n'+diff}],stream:false})})
+    let sugD=await sugR.json()
+    let msg=sugD.choices?.[0]?.message?.content?.replace(/["`']/g,'').trim()||''
+    if(msg){document.getElementById('git-commit-input').value=msg.split('\n')[0].slice(0,72)}
+  }catch(_){}
+  btn.disabled=false;btn.textContent='AI'
+}
 
 // --- V-SEARCH ---
 function switchGSearchTab(tab,btn){gsCurrentTab=tab;document.querySelectorAll('#gsearch-tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('gsearch-knowledge').style.display='none';if(gsLastQuery)gsearch()}
