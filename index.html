@@ -289,7 +289,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
     </div>
     <div class="section">
       <div class="section-title">Mode</div>
-      <div id="mode-toggle"><button class="active" data-mode="vibe" onclick="setMode('vibe')"><span class="mode-icon">~</span>Vibe</button><button data-mode="spec" onclick="setMode('spec')"><span class="mode-icon">#</span>Spec</button></div>
+      <div id="mode-toggle"><button class="active" data-mode="ask" onclick="setMode('ask')"><span class="mode-icon">?</span>Ask</button><button data-mode="code" onclick="setMode('code')"><span class="mode-icon">&lt;/&gt;</span>Code</button><button data-mode="architect" onclick="setMode('architect')"><span class="mode-icon">&#9670;</span>Arch</button></div>
     </div>
     <div class="spacer"></div>
     <div class="bottom">
@@ -500,8 +500,9 @@ function setMode(m){
   currentMode=m;localStorage.setItem('vmmode',m)
   document.querySelectorAll('#mode-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.mode===m))
   let badge=document.getElementById('mode-badge')
-  if(m==='vibe'){badge.textContent='~ Vibe';badge.style.color='var(--green)';badge.style.background='#1a2e1a'}
-  else{badge.textContent='# Spec';badge.style.color='var(--accent)';badge.style.background='#1a2744'}
+  if(m==='ask'){badge.textContent='? Ask';badge.style.color='var(--accent)';badge.style.background='#1a2744'}
+  else if(m==='code'){badge.textContent='</> Code';badge.style.color='var(--green)';badge.style.background='#1a2e1a'}
+  else{badge.textContent='&#9670; Arch';badge.style.color='#d2a8ff';badge.style.background='#2a1a3a'}
 }
 
 // --- APP MODE ---
@@ -859,16 +860,25 @@ async function execTool(tc){
 
 async function sendWithTools(text,folder){
   let t0=Date.now()
-  const model=appMode==='api'?document.getElementById('modelSelect').value:document.getElementById('modelSelect').value||'openai/gpt-4o-mini'
+  const model=appMode==='api'?document.getElementById('modelSelect').value:document.getElementById('settings-model').value
   const baseUrl=appMode==='api'?(apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'):'/api/chat'
   const authHeaders=appMode==='api'?{'Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})}:{}
-  const sys='You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.\n\n## How you operate\n1. **Explore first** — Before editing code, search the codebase with glob/grep. Read relevant files first.\n2. **Be concise** — Answer directly in 1-4 sentences when possible.\n3. **Follow conventions** — Match code style, libraries, patterns.\n4. **Explain commands** — Say what a command does and why.\n5. **Security** — Never expose secrets.\n6. **Markdown** — Use ``` with language tags, **bold**, `inline code`.\n7. **File references** — `path/file:line_number`.\n\nYou have tools: web_search, web_fetch, glob, grep, read_file, bash. Use them to explore and solve problems.'
+  const mode=currentMode||'ask'
+  const base='You are V-Mind, a super-intelligent AI coding assistant. Be concise, no preamble. Use ``` with language tags, **bold**, `inline code`. Reference files as `path/file:line`. Never expose secrets.'
+  const modePrompts={
+    ask:base+'\n\nMode: Ask. Only read/explore — never suggest edits. Answer questions about the codebase. Use web_search and web_fetch when you need current info.',
+    code:base+'\n\nMode: Code. You can read, edit, and write code. When making changes, use SEARCH/REPLACE blocks:\n```\npath/to/file.ext\n<<<<<<< SEARCH\nexisting code\n=======\nreplacement code\n>>>>>>> REPLACE\n```\nAlways explore first with glob/grep before editing. Verify your changes. You have all tools available.',
+    architect:base+'\n\nMode: Architect. High-level design and planning only. Do NOT write code or make edits. Discuss architecture, trade-offs, project structure. You have no tools — just think and explain.'
+  }
+  const sys=modePrompts[mode]||modePrompts.ask
+  const modeTools=mode==='code'?TOOLS:mode==='ask'?TOOLS.filter(t=>t.function.name==='web_search'||t.function.name==='web_fetch'||t.function.name==='read_file'):[]
   let messages=[{role:'system',content:sys},{role:'user',content:text+(folder?'. Working dir: '+folder:'')}]
   let finalText='',msgEl=null
 
   for(let round=0;round<8;round++){
-    let body={model,messages,stream:round===0,tool_choice:round===0?'auto':'none'}
-    if(round===0)body.tools=TOOLS
+    let body={model,messages,stream:round===0}
+    if(round===0)body.tool_choice=modeTools.length?'auto':'none'
+    if(modeTools.length)body.tools=modeTools
     let endpoint,r
     if(appMode==='cloud'){
       endpoint='/api/chat'
