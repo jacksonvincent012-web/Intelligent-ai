@@ -91,6 +91,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .msg-copy{position:absolute;bottom:4px;right:4px;padding:2px 8px;font-size:9px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit;opacity:0;transition:opacity .15s}
 .chat-msg:hover .msg-copy{opacity:1}.msg-copy:hover{border-color:var(--accent);color:var(--text)}
 .chat-msg .cb-prev{right:46px}.chat-msg .cb-copy:hover,.chat-msg .cb-prev:hover{border-color:var(--accent);color:var(--text)}
+.sr-block{margin:8px 0;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#0d1117}
+.sr-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#161b22;border-bottom:1px solid var(--border)}
+.sr-path{font-size:11px;color:var(--accent);font-family:monospace}
+.sr-apply{padding:3px 10px;font-size:10px;background:var(--green);color:#000;border:none;border-radius:3px;cursor:pointer;font-family:inherit;font-weight:600}
+.sr-apply:hover{opacity:.85}.sr-apply.done{background:#555;color:var(--dim);pointer-events:none}
+.sr-diff{display:flex;font-size:11px;line-height:1.5}
+.sr-side{flex:1;min-width:0}
+.sr-side pre{margin:0;padding:8px;overflow-x:auto;white-space:pre-wrap;font-family:monospace;font-size:11px;background:#0d1117}
+.sr-old pre{background:#1a1111;color:#f0c6c6}
+.sr-new pre{background:#111a11;color:#c6f0c6}
+.sr-label{padding:3px 8px;font-size:9px;color:var(--dim);background:#161b22;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+.sr-arrow{display:flex;align-items:center;padding:0 6px;color:var(--dim);font-size:16px}
 .chat-msg.tool-call{padding:2px 0;font-size:11px;color:var(--dim)}
 .chat-msg.tool-call.err{color:var(--red)}
 .file-chip .rm:hover{color:var(--red)}
@@ -785,12 +797,26 @@ function clearEvents(){document.getElementById('events-output').innerHTML='<div 
 // --- CHAT ---
 function renderMarkdown(t){
   if(!t)return''
+  // Parse SEARCH/REPLACE blocks before markdown
+  const srBlocks=[]
+  t=t.replace(/([^\n]+)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE/g,(m,path,search,replace)=>{
+    let idx=srBlocks.length
+    srBlocks.push({path:path.trim(),search:search.trimEnd(),replace:replace.trimEnd()})
+    return'\x00SR'+idx+'\x00'
+  })
   let id=0,map={}
   let s=t.replace(/```[\s\S]*?```|`[^`\n]+`/g,m=>{let k='\x00M'+id+'\x00';map[k]=m;id++;return k})
   s=esc(s)
   s=s.replace(/\x00M(\d+)\x00/g,(_,n)=>{let c=map['\x00M'+n+'\x00'];if(!c)return'';if(c.startsWith('```')){let lang=c.match(/^```(\w*)/)?.[1]||'',code=c.replace(/^```\w*\n?/,'').replace(/```$/,''),co='<pre><code class="hljs">'+esc(code)+'</code></pre>';try{if(window.hljs)hljs.highlightElement(co.querySelector('code'))}catch(e){}return co+'<button class="cb-copy" onclick="copyCode(this)">Copy</button>'}return'<code>'+esc(c.replace(/^`|`$/g,''))+'</code>'})
   s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');s=s.replace(/\*([^*]+)\*/g,'<i>$1</i>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/\n{2,}/g,'</p><p>');s=s.replace(/\n/g,'<br>')
-  return '<p>'+s+'</p>'
+  s='<p>'+s+'</p>'
+  // Replace SEARCH/REPLACE placeholders with interactive cards
+  s=s.replace(/\x00SR(\d+)\x00/g,(_,n)=>{
+    let b=srBlocks[+n];if(!b)return''
+    let se=esc(b.search),re=esc(b.replace),pe=esc(b.path)
+    return'<div class="sr-block"><div class="sr-header"><code class="sr-path">'+pe+'</code><button class="sr-apply" data-path="'+pe+'" data-search="'+esc(b.search).replace(/"/g,'&quot;')+'" data-replace="'+esc(b.replace).replace(/"/g,'&quot;')+'" onclick="applyEdit(this)">Apply Edit</button></div><div class="sr-diff"><div class="sr-side sr-old"><div class="sr-label">Original</div><pre>'+se+'</pre></div><div class="sr-arrow">&rarr;</div><div class="sr-side sr-new"><div class="sr-label">Replacement</div><pre>'+re+'</pre></div></div></div>'
+  })
+  return s
 }
 function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);if(role==='assistant'){let cb=document.createElement('button');cb.className='msg-copy';cb.textContent='Copy';cb.onclick=function(){navigator.clipboard.writeText(d.textContent).then(()=>{cb.textContent='Copied!';setTimeout(()=>cb.textContent='Copy',1500)})};d.appendChild(cb)}c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
 function copyCode(btn){let pre=btn.previousElementSibling;if(!pre||pre.tagName!='PRE')pre=btn.previousElementSibling?.previousElementSibling;let code=pre?.textContent||'';navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
@@ -836,6 +862,43 @@ async function sendMsg(){
   loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus()
 }
 
+// --- SEARCH/REPLACE EDIT APPLY ---
+async function applyEdit(btn){
+  let path=btn.dataset.path,search=btn.dataset.search,replace=btn.dataset.replace
+  if(appMode!=='backend'){btn.textContent='Needs Backend mode';btn.className='sr-apply done';return}
+  btn.textContent='Applying...';btn.disabled=true
+  let backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'')
+  try{
+    // Read current file
+    let r=await fetch(backendUrl+'/api/file?path='+encodeURIComponent(path))
+    let d=await r.json()
+    if(!d.content){btn.textContent='File not found';btn.className='sr-apply done';return}
+    let content=d.content
+    // Apply SEARCH/REPLACE
+    if(!content.includes(search)){btn.textContent='Original text not found';btn.className='sr-apply done';return}
+    let newContent=content.replace(search,replace)
+    // Write back via exec (create temp file approach) or direct API
+    let w=await fetch(backendUrl+'/api/exec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:'Set-Content -LiteralPath "'+path.replace(/"/g,'')+'" -Value '''+newContent.replace(/'/g,'''')+''' -Force'})})
+    let wd=await w.json()
+    if(wd.stdout!==null||wd.stderr===''){btn.textContent='Applied!';btn.className='sr-apply done';btn.style.background='var(--green)'}
+    else{btn.textContent='Write error';btn.className='sr-apply done';btn.style.background='var(--red)'}
+  }catch(e){btn.textContent='Error: '+e.message;btn.className='sr-apply done';btn.style.background='var(--red)'}
+}
+
+// --- REPO MAP ---
+async function buildRepoMap(folder){
+  if(appMode!=='backend')return''
+  let backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'')
+  try{
+    // Get project context
+    let r=await fetch(backendUrl+'/api/project/context')
+    if(!r.ok)return''
+    let d=await r.json()
+    if(d.summary||d.files)return 'Project structure:\n'+(d.summary||'')+'\nKey files:\n'+(d.files||d.tree||'(available)')
+    return''
+  }catch(e){return''}
+}
+
 // --- TOOL CALLING ---
 const TOOLS=[{type:'function',function:{name:'web_search',description:'Search the web for current information',parameters:{type:'object',properties:{query:{type:'string',description:'Search query'}},required:['query']}}},{type:'function',function:{name:'web_fetch',description:'Fetch and read the content of a URL',parameters:{type:'object',properties:{url:{type:'string',description:'URL to fetch'}},required:['url']}}},{type:'function',function:{name:'glob',description:'Find files matching a pattern',parameters:{type:'object',properties:{pattern:{type:'string',description:'Glob pattern like **/*.js'},path:{type:'string',description:'Directory to search (default: current)'}},required:['pattern']}}},{type:'function',function:{name:'grep',description:'Search file contents for a pattern',parameters:{type:'object',properties:{pattern:{type:'string',description:'Regex to search for'},include:{type:'string',description:'File pattern like *.js'}},required:['pattern']}}},{type:'function',function:{name:'read_file',description:'Read a file from the filesystem',parameters:{type:'object',properties:{path:{type:'string',description:'Absolute file path'}},required:['path']}}},{type:'function',function:{name:'bash',description:'Run a shell command',parameters:{type:'object',properties:{command:{type:'string',description:'Command to execute'}},required:['command']}}}]
 
@@ -872,7 +935,8 @@ async function sendWithTools(text,folder){
   }
   const sys=modePrompts[mode]||modePrompts.ask
   const modeTools=mode==='code'?TOOLS:mode==='ask'?TOOLS.filter(t=>t.function.name==='web_search'||t.function.name==='web_fetch'||t.function.name==='read_file'):[]
-  let messages=[{role:'system',content:sys},{role:'user',content:text+(folder?'. Working dir: '+folder:'')}]
+  const repoMap=await buildRepoMap(folder)
+  let messages=[{role:'system',content:sys+(repoMap?'\n\n'+repoMap:'')},{role:'user',content:text+(folder?'. Working dir: '+folder:'')}]
   let finalText='',msgEl=null
 
   for(let round=0;round<8;round++){
