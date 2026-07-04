@@ -4,10 +4,9 @@
 <img width="1920" height="1032" alt="Screenshot 2026-06-27 140343" src="https://github.com/user-attachments/assets/84d8f0fc-4c55-4259-ab00-beefd79d296a" />
 
 
-V-Mind is a production-grade desktop AI agent built with a Python/FastAPI backend and a feature-rich browser-based frontend. It combines local LLM inference (Ollama) with cloud model access (OpenRouter/OpenAI) to deliver autonomous task execution across files, git, shell, system control, web search, code analysis, and more.
-
+V-Mind is a production-grade desktop AI agent built with a Python/FastAPI backend and a feature-rich browser-based frontend. It combines local LLM inference (Ollama) with cloud model access (OpenRouterI) to deliver autonomous task execution across files, git, shell, system control, web search, code analysis, and more.
 ---
-
+https://vm-deploy.vercel.app/
 ## Features
 
 **AI Core**
