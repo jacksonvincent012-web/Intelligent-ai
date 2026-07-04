@@ -89,7 +89,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .chat-msg p{margin:4px 0}
 .chat-msg .cb-copy,.chat-msg .cb-prev{position:absolute;top:4px;right:4px;padding:2px 8px;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit}
 .msg-copy{position:absolute;bottom:4px;right:4px;padding:2px 8px;font-size:9px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--dim);cursor:pointer;font-family:inherit;opacity:0;transition:opacity .15s}
-.chat-msg:hover .msg-copy{opacity:1}.msg-copy:hover{border-color:var(--accent);color:var(--text)}
+.msg-explain{position:absolute;bottom:4px;right:52px;padding:2px 8px;font-size:9px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--accent);cursor:pointer;font-family:inherit;opacity:0;transition:opacity .15s}
+.chat-msg:hover .msg-copy,.chat-msg:hover .msg-explain{opacity:1}.msg-copy:hover,.msg-explain:hover{border-color:var(--accent);color:var(--text)}
 .chat-msg .cb-prev{right:46px}.chat-msg .cb-copy:hover,.chat-msg .cb-prev:hover{border-color:var(--accent);color:var(--text)}
 .sr-block{margin:8px 0;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#0d1117}
 .sr-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#161b22;border-bottom:1px solid var(--border)}
@@ -818,7 +819,7 @@ function renderMarkdown(t){
   })
   return s
 }
-function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);if(role==='assistant'){let cb=document.createElement('button');cb.className='msg-copy';cb.textContent='Copy';cb.onclick=function(){navigator.clipboard.writeText(d.textContent).then(()=>{cb.textContent='Copied!';setTimeout(()=>cb.textContent='Copy',1500)})};d.appendChild(cb)}c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
+function addMsg(text,role,files){let c=document.getElementById('chat-inner'),d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=renderMarkdown(text);if(role==='assistant'){let cb=document.createElement('button');cb.className='msg-copy';cb.textContent='Copy';cb.onclick=function(){navigator.clipboard.writeText(d.textContent).then(()=>{cb.textContent='Copied!';setTimeout(()=>cb.textContent='Copy',1500)})};d.appendChild(cb);let eb=document.createElement('button');eb.className='msg-explain';eb.textContent='Explain Deeper';eb.onclick=function(){explainDeeper(d.textContent)};d.appendChild(eb)}c.appendChild(d);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;return d}
 function copyCode(btn){let pre=btn.previousElementSibling;if(!pre||pre.tagName!='PRE')pre=btn.previousElementSibling?.previousElementSibling;let code=pre?.textContent||'';navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
 function renderFileChips(){let el=document.getElementById('file-preview');if(!pendingFiles.length){el.innerHTML='';return}el.innerHTML=pendingFiles.map((f,i)=>'<div class="file-chip" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;margin:2px 4px"><span>'+esc(f.name)+'</span><span class="rm" style="cursor:pointer;color:var(--dim)" onclick="removeFile('+i+')">x</span></div>').join('')}
 async function uploadFiles(files){for(let f of files){let fd=new FormData();fd.append('file',f);fd.append('session_id',sid);try{let r=await fetch('/api/upload',{method:'POST',body:fd});let d=await r.json();if(d.ok){pendingFiles.push(d.file);renderFileChips()}else addMsg('Upload error: '+d.error,'assistant')}catch(e){addMsg('Upload failed: '+e.message,'assistant')}}}
@@ -883,6 +884,15 @@ async function applyEdit(btn){
     if(wd.stdout!==null||wd.stderr===''){btn.textContent='Applied!';btn.className='sr-apply done';btn.style.background='var(--green)';try{let cr=await fetch(backendUrl+'/api/git/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});let cd=await cr.json();if(cd.commit_hash||cd.message)addMsg('Committed: '+(cd.message||'').slice(0,60),'assistant')}catch(_){}}
     else{btn.textContent='Write error';btn.className='sr-apply done';btn.style.background='var(--red)'}
   }catch(e){btn.textContent='Error: '+e.message;btn.className='sr-apply done';btn.style.background='var(--red)'}
+}
+
+// --- EXPLAIN DEEPER ---
+async function explainDeeper(text){
+  let inp=document.getElementById('chat-input'),orig=inp.value
+  inp.value='Explain deeper: '+text.slice(0,200)+'...'
+  if(appMode==='cloud'||appMode==='api')await sendWithTools('Explain the code above in more depth — break down each key part, how it works, and why it was done that way. Teach me like a beginner.','')
+  else sendMsg()
+  inp.value=orig
 }
 
 // --- REPO MAP ---
