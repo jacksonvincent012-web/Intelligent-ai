@@ -1,6 +1,8 @@
 # V-Mind AI
 
 **A super-intelligent AI agent that controls your PC, writes code, searches the web, and manages projects — all through an elegant chat interface.**
+<img width="1920" height="1032" alt="Screenshot 2026-06-27 140343" src="https://github.com/user-attachments/assets/84d8f0fc-4c55-4259-ab00-beefd79d296a" />
+
 
 V-Mind is a production-grade desktop AI agent built with a Python/FastAPI backend and a feature-rich browser-based frontend. It combines local LLM inference (Ollama) with cloud model access (OpenRouter/OpenAI) to deliver autonomous task execution across files, git, shell, system control, web search, code analysis, and more.
 
@@ -67,6 +69,7 @@ V-Mind is a production-grade desktop AI agent built with a Python/FastAPI backen
 - Speech-to-text via browser SpeechRecognition API
 - Text-to-speech via Windows TTS and browser SpeechSynthesis
 - Hands-free interaction with voice commands
+<img width="1920" height="1032" alt="Screenshot 2026-06-27 000719" src="https://github.com/user-attachments/assets/ca80530d-aec3-4edb-aa57-eca2dcc9b654" />
 
 ---
 
@@ -99,47 +102,6 @@ V-Mind is a production-grade desktop AI agent built with a Python/FastAPI backen
 │  │ (Local)  │  │ (Cloud)  │  │ / Wikipedia  │  │
 │  └──────────┘  └──────────┘  └──────────────┘  │
 └─────────────────────────────────────────────────┘
-```
-
----
-
-## Quick Start
-
-### Prerequisites
-- Python 3.10+
-- [Ollama](https://ollama.com) (for local inference, optional)
-- An API key for [OpenRouter](https://openrouter.ai) or [OpenAI](https://platform.openai.com) (optional, for cloud models)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/jacksonvincent012-web/Intelligent-ai.git
-cd Intelligent-ai
-
-# Install dependencies
-pip install -e .
-
-# (Optional) Pull a local model
-ollama pull tinyllama
-
-# Start the server
-python run_server.py
-```
-
-The server starts at `http://127.0.0.1:8765`. Open it in your browser.
-
-### Vercel Deployment
-
-The frontend can be deployed independently to Vercel:
-
-```bash
-# Deploy the landing page + web UI
-npx vercel --prod
-```
-
-Or connect the GitHub repository directly via the Vercel dashboard. The frontend connects to any running V-Mind backend via the configurable URL input.
-
 ---
 
 ## Environment Variables
@@ -153,20 +115,7 @@ Or connect the GitHub repository directly via the Vercel dashboard. The frontend
 
 ---
 
-## Development
 
-```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Lint
-ruff check .
-
-# Type check
-mypy v_mind
 ```
 
 ---
