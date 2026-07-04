@@ -311,7 +311,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         <div id="apiSettings">
           <select id="apiProvider" style="width:auto"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option></select>
           <input id="apiKeyInput" type="password" placeholder="sk-..." style="width:140px">
-          <select id="modelSelect" style="width:auto"><option value="gpt-4o-mini">GPT-4o Mini</option></select>
+          <select id="modelSelect" style="width:auto"><option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option><option value="o3-mini">O3 Mini</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option></select>
         </div>
         <span style="margin-left:auto;font-size:10px;color:var(--dim)"><span id="mode-badge" style="color:var(--green)">~ Vibe</span> <span id="m-badge" style="color:var(--dim)">gpt-4o</span></span>
       </div>
@@ -812,71 +812,107 @@ async function sendMsg(){
   addMsg(header,'user')
   try{
     let folder=document.getElementById('file-path-input').value
-    let r
-    if(appMode==='cloud'){
-      const model=document.getElementById('modelSelect').value||'openai/gpt-4o-mini'
-      r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.
-
-## How you operate
-1. **Explore first** — Before editing code, search the codebase with tools like glob/grep to understand file structure, conventions, and existing patterns. Read relevant files before making changes.
-2. **Be concise** — Answer directly in 1-4 sentences when possible. No preamble, no postamble, no explanations unless asked.
-3. **Follow conventions** — Match the code style, libraries, and patterns of the project. Never assume a library exists; check package.json or imports first.
-4. **Explain commands** — When you run a command, say what it does and why.
-5. **Be proactive** — After fixing one issue, suggest what to check next (lint, tests, typecheck).
-6. **Security** — Never expose or commit secrets/keys.
-7. **Code style** — No comments in code unless asked. No emojis unless requested.
-8. **Markdown** — Use ``` for code blocks with language tags. Use **bold** for emphasis. Use `inline code` for filenames, commands, and short snippets.
-9. **File references** — Reference files as `path/file.ext:line_number` when pointing to specific code.
-10. **Verification** — After making changes, suggest how to verify (linting, tests, type check commands).
-
-You have access to tools: glob (find files by pattern), grep (search file contents), read (view files), edit (modify files), write (create files), bash (run commands), web search/fetch (get info). Use them like an engineer exploring and fixing a codebase.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
-      if(!r.ok){let err;try{err=(await r.json()).error}catch(e){err=await r.text()};addMsg('Cloud Error: '+err,'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
-    }else if(appMode==='api'){
-      const model=document.getElementById('modelSelect').value
-      const baseUrl=apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'
-      r=await origFetch(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.
-
-## How you operate
-1. **Explore first** — Before editing code, search the codebase with tools like glob/grep to understand file structure, conventions, and existing patterns. Read relevant files before making changes.
-2. **Be concise** — Answer directly in 1-4 sentences when possible. No preamble, no postamble, no explanations unless asked.
-3. **Follow conventions** — Match the code style, libraries, and patterns of the project. Never assume a library exists; check package.json or imports first.
-4. **Explain commands** — When you run a command, say what it does and why.
-5. **Be proactive** — After fixing one issue, suggest what to check next (lint, tests, typecheck).
-6. **Security** — Never expose or commit secrets/keys.
-7. **Code style** — No comments in code unless asked. No emojis unless requested.
-8. **Markdown** — Use ``` for code blocks with language tags. Use **bold** for emphasis. Use `inline code` for filenames, commands, and short snippets.
-9. **File references** — Reference files as `path/file.ext:line_number` when pointing to specific code.
-10. **Verification** — After making changes, suggest how to verify (linting, tests, type check commands).
-
-You have access to tools: glob (find files by pattern), grep (search file contents), read (view files), edit (modify files), write (create files), bash (run commands), web search/fetch (get info). Use them like an engineer exploring and fixing a codebase.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
-      if(!r.ok){let err=await r.text();addMsg('API Error: '+(JSON.parse(err).error?.message||err),'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
+    if(appMode==='cloud'||appMode==='api'){
+      await sendWithTools(text,folder)
     }else{
       backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'');localStorage.setItem('vmBackendUrl',backendUrl)
-      r=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,session_id:sid,file_ids:fileIds,mode:currentMode,backend:'auto',folder}),signal:AbortSignal.timeout(60000)})
-    }
-    let reader=r.body.getReader(),decoder=new TextDecoder(),msgEl=null,full='',doneReceived=false
-    while(true){
-      let{done,value}=await reader.read()
-      if(done)break
-      let chunk=decoder.decode(value)
-      if(appMode==='api'||appMode==='cloud'){
-        for(let line of chunk.split('\n').filter(l=>l.startsWith('data: '))){
-          let data=line.slice(6);if(data==='[DONE]'){doneReceived=true;break}
-          try{let content=JSON.parse(data).choices?.[0]?.delta?.content||'';if(content){full+=content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}}catch(_){}
-        }
-      }else{
+      let r=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,session_id:sid,file_ids:fileIds,mode:currentMode,backend:'auto',folder}),signal:AbortSignal.timeout(60000)})
+      let reader=r.body.getReader(),decoder=new TextDecoder(),msgEl=null,full='',doneReceived=false
+      while(true){
+        let{done,value}=await reader.read()
+        if(done)break
+        let chunk=decoder.decode(value)
         for(let line of chunk.trim().split('\n')){
           try{let ev=JSON.parse(line);if(ev.type==='token'){full+=ev.content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}else if(ev.type==='done'){doneReceived=true;let final=ev.content||full;if(msgEl){msgEl.remove();addMsg(final,'assistant')}else addMsg(final,'assistant');full=final}}catch(_){}
         }
       }
+      if(!doneReceived){if(!msgEl)addMsg(full||'No response.','assistant');else{msgEl.remove();addMsg(full,'assistant')}}
+      speakText(full)
+      let elapsed=Date.now()-t0
+      if(elapsed>5000&&'Notification'in window&&Notification.permission==='granted')new Notification('V-Mind replied',{body:'('+(elapsed/1000).toFixed(1)+'s) '+(full||'').slice(0,80)+'...'})
     }
-    if(!doneReceived&&appMode!=='api'&&appMode!=='cloud'){if(!msgEl)addMsg(full||'No response.','assistant');else{msgEl.remove();addMsg(full,'assistant')}}
-    if(appMode==='api'||appMode==='cloud'){doneReceived=true;if(msgEl&&full&&msgEl.textContent!==full){msgEl.textContent=full}}
-    speakText(full)
-    let elapsed=Date.now()-t0
-    if(elapsed>5000&&'Notification'in window&&Notification.permission==='granted')new Notification('V-Mind replied',{body:'('+(elapsed/1000).toFixed(1)+'s) '+(full||'').slice(0,80)+'...'})
   }catch(e){addMsg('Error: '+e.message,'assistant')}
   loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus()
+}
+
+// --- TOOL CALLING ---
+const TOOLS=[{type:'function',function:{name:'web_search',description:'Search the web for current information',parameters:{type:'object',properties:{query:{type:'string',description:'Search query'}},required:['query']}}},{type:'function',function:{name:'web_fetch',description:'Fetch and read the content of a URL',parameters:{type:'object',properties:{url:{type:'string',description:'URL to fetch'}},required:['url']}}},{type:'function',function:{name:'glob',description:'Find files matching a pattern',parameters:{type:'object',properties:{pattern:{type:'string',description:'Glob pattern like **/*.js'},path:{type:'string',description:'Directory to search (default: current)'}},required:['pattern']}}},{type:'function',function:{name:'grep',description:'Search file contents for a pattern',parameters:{type:'object',properties:{pattern:{type:'string',description:'Regex to search for'},include:{type:'string',description:'File pattern like *.js'}},required:['pattern']}}},{type:'function',function:{name:'read_file',description:'Read a file from the filesystem',parameters:{type:'object',properties:{path:{type:'string',description:'Absolute file path'}},required:['path']}}},{type:'function',function:{name:'bash',description:'Run a shell command',parameters:{type:'object',properties:{command:{type:'string',description:'Command to execute'}},required:['command']}}}]
+
+async function execTool(tc){
+  let args;try{args=JSON.parse(tc.function.arguments)}catch(e){return'Error: invalid arguments'}
+  let name=tc.function.name
+  if(name==='web_search'){
+    try{let r=await fetch('/api/search?query='+encodeURIComponent(args.query));let d=await r.json();if(d.results)return JSON.stringify(d.results.slice(0,5));return JSON.stringify(d)}catch(e){return'Search error: '+e.message}
+  }
+  if(name==='web_fetch'){
+    try{let r=await fetch('/api/fetch?url='+encodeURIComponent(args.url));let d=await r.json();return d.content||d.error||'No content'}catch(e){return'Fetch error: '+e.message}
+  }
+  if(appMode!=='backend')return'Tool "'+name+'" requires a local backend (switch to Backend mode).'
+  let backendUrl=document.getElementById('backendUrl').value.replace(/\/+$/,'')
+  async function proxy(endpoint,body){try{let r=await fetch(backendUrl+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});let d=await r.json();return JSON.stringify(d)}catch(e){return'Error: '+e.message}}
+  if(name==='glob'){return await proxy('/api/exec',{command:'Get-ChildItem -Recurse -Filter "'+args.pattern.replace(/"/g,'')+'"'+(args.path?' -LiteralPath "'+args.path.replace(/"/g,'')+'"':'')+' | Select-Object -ExpandProperty FullName'})}
+  if(name==='grep'){return await proxy('/api/exec',{command:'Select-String -Path "'+(args.include||'*')+'" -Pattern "'+args.pattern.replace(/"/g,'')+'" -Recurse | Select-Object -First 20'})}
+  if(name==='read_file'){try{let r=await fetch(backendUrl+'/api/file?path='+encodeURIComponent(args.path));let d=await r.json();return d.content||d.error||'File not found'}catch(e){return'Error: '+e.message}}
+  if(name==='bash'){return await proxy('/api/exec',{command:args.command})}
+  return'Unknown tool: '+name
+}
+
+async function sendWithTools(text,folder){
+  let t0=Date.now()
+  const model=appMode==='api'?document.getElementById('modelSelect').value:document.getElementById('modelSelect').value||'openai/gpt-4o-mini'
+  const baseUrl=appMode==='api'?(apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'):'/api/chat'
+  const authHeaders=appMode==='api'?{'Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})}:{}
+  const sys='You are V-Mind, a super-intelligent AI coding assistant. You help users build, explore, and debug codebases.\n\n## How you operate\n1. **Explore first** — Before editing code, search the codebase with glob/grep. Read relevant files first.\n2. **Be concise** — Answer directly in 1-4 sentences when possible.\n3. **Follow conventions** — Match code style, libraries, patterns.\n4. **Explain commands** — Say what a command does and why.\n5. **Security** — Never expose secrets.\n6. **Markdown** — Use ``` with language tags, **bold**, `inline code`.\n7. **File references** — `path/file:line_number`.\n\nYou have tools: web_search, web_fetch, glob, grep, read_file, bash. Use them to explore and solve problems.'
+  let messages=[{role:'system',content:sys},{role:'user',content:text+(folder?'. Working dir: '+folder:'')}]
+  let finalText='',msgEl=null
+
+  for(let round=0;round<8;round++){
+    let body={model,messages,stream:round===0,tool_choice:round===0?'auto':'none'}
+    if(round===0)body.tools=TOOLS
+    let endpoint,r
+    if(appMode==='cloud'){
+      endpoint='/api/chat'
+      r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)})
+    }else{
+      endpoint=baseUrl+'/chat/completions'
+      r=await origFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders},body:JSON.stringify(body),signal:AbortSignal.timeout(60000)})
+    }
+    if(!r.ok){let e;try{e=(await r.json()).error}catch(_){e=await r.text()};addMsg('Error: '+e,'assistant');return}
+
+    if(round===0){
+      let reader=r.body.getReader(),decoder=new TextDecoder(),full='',toolCalls=[],currTc=null
+      while(true){
+        let{done,value}=await reader.read()
+        if(done)break
+        for(let line of decoder.decode(value).split('\n').filter(l=>l.startsWith('data: '))){
+          let data=line.slice(6)
+          if(data==='[DONE]')break
+          try{
+            let p=JSON.parse(data),delta=p.choices?.[0]?.delta||{}
+            if(delta.content){full+=delta.content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}
+            if(delta.tool_calls){for(let tc of delta.tool_calls){if(tc.index!==undefined){if(!toolCalls[tc.index])toolCalls[tc.index]={id:tc.id||'call_'+tc.index,function:{name:'',arguments:''}};if(tc.id)toolCalls[tc.index].id=tc.id;if(tc.function?.name)toolCalls[tc.index].function.name+=tc.function.name;if(tc.function?.arguments)toolCalls[tc.index].function.arguments+=tc.function.arguments}}}
+          }catch(_){}
+        }
+      }
+      finalText=full
+      toolCalls=toolCalls.filter(Boolean)
+      if(toolCalls.length===0)break
+      for(let tc of toolCalls){
+        let result=await execTool(tc)
+        messages.push({role:'assistant',content:null,tool_calls:[{id:tc.id,type:'function',function:{name:tc.function.name,arguments:tc.function.arguments}}]})
+        messages.push({role:'tool',tool_call_id:tc.id,content:result})
+      }
+    }else{
+      let data=await r.json()
+      let choice=data.choices?.[0]
+      if(choice?.message?.content){finalText=choice.message.content;if(msgEl)msgEl.textContent=finalText;else addMsg(finalText,'assistant')}
+      break
+    }
+  }
+  if(finalText&&!document.querySelector('.chat-msg.assistant:last-child'))addMsg(finalText,'assistant')
+  speakText(finalText)
+  let elapsed=Date.now()-t0
+  if(elapsed>5000&&'Notification'in window&&Notification.permission==='granted')new Notification('V-Mind replied',{body:'('+(elapsed/1000).toFixed(1)+'s) '+finalText.slice(0,80)+'...'})
 }
 
 // --- LAYER ---
@@ -938,7 +974,7 @@ setTimeout(loadBooks,500)
 document.getElementById('main').insertAdjacentHTML('beforeend','<div id="layer-view"><div class="panel-bg" id="bg-layer"></div><div id="layer-out"><div class="l"><span class="d"># The Layer — Kali command reference</span></div></div><div id="layer-input-row"><span class="prompt">root@kali:~#</span><input id="layer-input" type="text" placeholder="recon, nmap, hydra, help" onkeydown="if(event.key===\'Enter\')sendLayer()"></div></div>')
 document.getElementById('main').insertAdjacentHTML('beforeend','<div id="browser-view"><div class="panel-bg" id="bg-browser"></div><div id="browser-tabs"><button class="active" onclick="brTab(\'browse\',this)">&#127760; Browse</button><button onclick="brTab(\'search\',this)">&#128269; V-Search</button></div><div id="browser-toolbar"><button id="br-back" onclick="brBack()" disabled>&#9664;</button><button id="br-fwd" onclick="brForward()" disabled>&#9654;</button><button onclick="brRefresh()">&#8635;</button><input id="browser-url" type="text" placeholder="Enter URL or search..." onkeydown="if(event.key===\'Enter\')brNavigate(this.value)"><button onclick="brNavigate(document.getElementById(\'browser-url\').value)">Go</button></div><div id="browser-status">Ready</div><div id="browser-content"><iframe id="browser-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="display:none;width:100%;height:100%;border:none"></iframe><div id="browser-fallback" style="display:flex;align-items:center;justify-content:center;color:#555;font-size:13px;flex-direction:column;gap:8px;height:100%"><div style="font-size:48px;opacity:.3">&#127760;</div><div>Enter a URL or search the web</div></div></div></div>')
 document.getElementById('main').insertAdjacentHTML('beforeend','<div id="library-view"><div class="panel-bg" id="bg-library"></div><div id="lib-header"><button onclick="showLibShelf()">&larr; Back</button><span class="lib-title">Library</span><input id="lib-search" type="text" placeholder="Search books..." oninput="searchLib(this.value)"><button onclick="document.getElementById(\'lib-upload\').click()">+ Upload</button><input id="lib-upload" type="file" accept=".txt,.md" style="display:none" onchange="uploadBook(this)"></div><div id="lib-shelf" class="lib-shelf"></div><div id="lib-reader" class="lib-reader" style="display:none"></div></div>')
-document.getElementById('main').insertAdjacentHTML('beforeend','<div id="settings-view"><div class="settings-group"><h3>Model</h3><div class="settings-row"><span>AI Model</span><select id="settings-model" onchange="updateModel(this.value)"><option value="cohere/north-mini-code:free">Cohere North Mini Code (Free)</option><option value="openai/gpt-oss-120b:free">GPT-OSS 120B (Free)</option><option value="google/gemma-4-26b-a4b-it:free">Gemma 4 26B (Free)</option><option value="google/gemma-4-31b-it:free">Gemma 4 31B (Free)</option></select></div><div class="settings-row"><span>Temperature</span><input type="number" id="settings-temp" value="0.3" min="0" max="2" step="0.1" style="width:50px"></div></div><div class="settings-group"><h3>Backend</h3><div class="settings-row"><span>Backend</span><select id="settings-backend" onchange="switchBackend(this.value)"><option value="auto">Auto</option><option value="remote">Remote</option><option value="local">Local (Ollama)</option></select></div><div class="settings-row"><span>Status</span><span id="settings-status">checking...</span></div><div class="settings-row"><span>Ollama</span><span id="settings-ollama">checking...</span></div></div></div>')
+document.getElementById('main').insertAdjacentHTML('beforeend','<div id="settings-view"><div class="settings-group"><h3>Model</h3><div class="settings-row"><span>AI Model</span><select id="settings-model" onchange="updateModel(this.value)"><option value="openai/gpt-4o-mini">GPT-4o Mini</option><option value="openai/gpt-4o">GPT-4o</option><option value="openai/o3-mini">O3 Mini</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option><option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option><option value="mistralai/mistral-7b-instruct:free">Mistral 7B (Free)</option><option value="cohere/north-mini-code:free">Cohere North Mini Code (Free)</option><option value="openai/gpt-oss-120b:free">GPT-OSS 120B (Free)</option><option value="google/gemma-4-26b-a4b-it:free">Gemma 4 26B (Free)</option><option value="nousresearch/hermes-3-llama-3.1-405b:free">Hermes 3 405B (Free)</option></select></div><div class="settings-row"><span>Temperature</span><input type="number" id="settings-temp" value="0.3" min="0" max="2" step="0.1" style="width:50px"></div></div><div class="settings-group"><h3>Backend</h3><div class="settings-row"><span>Backend</span><select id="settings-backend" onchange="switchBackend(this.value)"><option value="auto">Auto</option><option value="remote">Remote</option><option value="local">Local (Ollama)</option></select></div><div class="settings-row"><span>Status</span><span id="settings-status">checking...</span></div><div class="settings-row"><span>Ollama</span><span id="settings-ollama">checking...</span></div></div></div>')
 
 // --- SETTINGS ---
 async function renderSettings(){try{let r=await fetch('/api/status');let d=await r.json();let st=d.backend=='local'?'Local (Ollama)':(d.online?'Remote ('+d.model+')':'No API key');document.getElementById('settings-status').textContent=st;document.getElementById('settings-status').style.color=d.online?'var(--green)':(d.ollama_running?'var(--green)':'var(--red)');document.getElementById('settings-ollama').textContent=d.ollama_running?'Running ('+(d.ollama_models.length||0)+' models)':'Not installed';document.getElementById('settings-ollama').style.color=d.ollama_running?'var(--green)':'var(--dim)';document.getElementById('settings-backend').value=d.backend}catch(e){document.getElementById('settings-status').textContent='Error'}}
