@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V-Mind AI – Super-Intelligent AI Agent</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e6edf3}
+:root{--bg:#0d1117;--surface:#151b23;--border:#30363d;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--text:#e6edf3;--dim:#8b949e}
+
+/* LANDING */
+.landing{min-height:100vh;display:flex;flex-direction:column}
+.hero{padding:60px 20px 40px;text-align:center;background:linear-gradient(180deg,#0d1117 0%,#161b22 100%)}
+.hero-logo{width:80px;height:80px;margin:0 auto 16px;background:linear-gradient(135deg,#3fb950,#58a6ff);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#0d1117}
+.hero h1{font-size:48px;font-weight:800;background:linear-gradient(135deg,#3fb950,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:18px;color:var(--dim);margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto}
+.hero-btns{margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:opacity .2s}
+.btn-primary{background:linear-gradient(135deg,#3fb950,#2ea043);color:#000}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent)}
+.btn-primary:hover{opacity:.85}
+
+.features{padding:60px 20px;max-width:1000px;margin:0 auto}
+.features h2{font-size:28px;text-align:center;margin-bottom:40px;color:var(--text)}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,transform .2s;cursor:pointer}
+.feature-card:hover{transform:translateY(-2px)}.feature-card:active{transform:translateY(0)}
+.feature-card.c0{border-left:3px solid var(--green)}
+.feature-card.c1{border-left:3px solid var(--accent)}
+.feature-card.c2{border-left:3px solid #d2a8ff}
+.feature-card.c3{border-left:3px solid #ffa657}
+.feature-card.c4{border-left:3px solid #ff6b6b}
+.feature-card.c5{border-left:3px solid #56d4dd}
+.feature-card.c6{border-left:3px solid #f0c000}
+.feature-card.c7{border-left:3px solid #3fb950}
+.feature-icon{font-size:28px;margin-bottom:10px}
+.feature-card h3{font-size:16px;margin-bottom:6px;color:var(--text)}
+.feature-card p{font-size:13px;color:var(--dim);line-height:1.6}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-header .micon{font-size:22px;margin-right:10px}
+.modal-header h3{font-size:16px;color:var(--text);flex:1}
+.modal-close{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px;color:var(--dim);font-size:13px;line-height:1.7}
+.modal-body .demo-box{background:#0a0e14;border:1px solid #21262d;border-radius:8px;padding:16px;margin:12px 0;font-family:monospace;font-size:12px;white-space:pre-wrap}
+.demo-box .prompt{color:var(--green)}.demo-box .output{color:var(--dim)}.demo-box .highlight{color:var(--accent)}
+.demo-box .cursor{display:inline-block;width:2px;height:14px;background:var(--green);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.modal-body .desc{margin-bottom:12px;color:var(--dim)}
+
+/* APP MODE */
+.app-mode{display:none;height:100vh;flex-direction:column}
+.app-header{display:flex;align-items:center;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.app-header .logo{font-weight:800;font-size:18px;color:var(--green)}
+.app-header .url-input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.app-header .url-input:focus{border-color:var(--accent)}
+.app-header .status-dot{width:10px;height:10px;border-radius:50%;background:var(--dim)}
+.app-header .status-dot.online{background:var(--green)}
+.app-header .status-dot.offline{background:var(--red)}
+.connection-status{font-size:12px;color:var(--dim)}
+.back-btn{padding:6px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:12px;font-family:inherit}
+.back-btn:hover{border-color:var(--accent)}
+
+.main-app{flex:1;display:flex;min-height:0}
+#chat-panel{flex:2;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+#chat-area{flex:1;overflow-y:auto;padding:12px}
+#chat-messages{max-width:700px;margin:0 auto}
+.chat-msg{padding:6px 0;line-height:1.6;font-size:13px}
+.chat-msg.user{color:var(--accent)}
+.chat-msg.assistant{color:var(--text)}
+.chat-msg pre{margin:8px 0;background:#0a0e14;border:1px solid #21262d;border-radius:6px;padding:12px;overflow-x:auto;font-size:12px}
+.chat-msg code{background:#161b22;padding:2px 6px;border-radius:3px;font-size:12px}
+.input-area{padding:10px 16px;border-top:1px solid var(--border)}
+.input-row{display:flex;gap:8px;max-width:700px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+.input-row:focus-within{border-color:var(--accent)}
+.input-row input{flex:1;border:none;background:transparent;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.input-row input::placeholder{color:var(--dim)}
+.input-row button{padding:6px 16px;border-radius:6px;border:none;background:var(--accent);color:#000;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit}
+.input-row button:hover{opacity:.85}
+.input-row button:disabled{opacity:.4;cursor:not-allowed}
+
+#info-panel{flex:3;display:flex;flex-direction:column;padding:20px;overflow-y:auto}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.info-card h3{font-size:15px;margin-bottom:8px;color:var(--text)}
+.info-card p{font-size:13px;color:var(--dim);line-height:1.6}
+.info-card code{background:#161b22;padding:2px 6px;border-radius:3px;font-size:12px;color:var(--accent)}
+.capability-list{list-style:none;padding:0}
+.capability-list li{padding:6px 0;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.capability-list li::before{content:"\2713";color:var(--green);font-weight:700}
+
+@media(max-width:768px){
+  .main-app{flex-direction:column}
+  #info-panel{display:none}
+  .hero h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div class="landing" id="landing">
+  <div class="hero">
+    <div class="hero-logo">V</div>
+    <h1>V-Mind AI</h1>
+    <p>A super-intelligent AI agent that controls your PC, writes flawless code, searches the web, and manages your projects — all through an elegant chat interface.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="openApp()">&#9889; Launch V-Mind</button>
+      <a class="btn btn-secondary" href="https://github.com/jacksonvincent012-web/Intelligent-ai" target="_blank">&#128279; GitHub</a>
+    </div>
+  </div>
+
+  <div class="features">
+    <h2>Everything at your command</h2>
+    <div class="feature-grid">
+      <div class="feature-card c0" onclick="showFeature(0)">
+        <div class="feature-icon">&#128187;</div>
+        <h3>PC Control</h3>
+        <p>Launch apps, manage processes, control mouse/keyboard, take screenshots, and run system commands.</p>
+      </div>
+      <div class="feature-card c1" onclick="showFeature(1)">
+        <div class="feature-icon">&#128221;</div>
+        <h3>Code &amp; Projects</h3>
+        <p>Write, review, and fix code across all languages. Index projects, run git operations, and auto-fix issues.</p>
+      </div>
+      <div class="feature-card c2" onclick="showFeature(2)">
+        <div class="feature-icon">&#127760;</div>
+        <h3>Web Search</h3>
+        <p>Search the web, fetch pages, query Wikipedia, and get answers — all without leaving the chat.</p>
+      </div>
+      <div class="feature-card c3" onclick="showFeature(3)">
+        <div class="feature-icon">&#128200;</div>
+        <h3>System Monitor</h3>
+        <p>Watch CPU, RAM, and processes in real-time. Get notified of important system events.</p>
+      </div>
+      <div class="feature-card c4" onclick="showFeature(4)">
+        <div class="feature-icon">&#128736;&#65039;</div>
+        <h3>The Layer</h3>
+        <p>Built-in Kali Linux command reference with 20+ penetration testing tools at your fingertips.</p>
+      </div>
+      <div class="feature-card c5" onclick="showFeature(5)">
+        <div class="feature-icon">&#128218;</div>
+        <h3>Library</h3>
+        <p>Curated knowledge library with downloadable books and quick-reference guides.</p>
+      </div>
+      <div class="feature-card c6" onclick="showFeature(6)">
+        <div class="feature-icon">&#127911;</div>
+        <h3>Voice I/O</h3>
+        <p>Speak to V-Mind and hear responses via voice synthesis. Hands-free interaction.</p>
+      </div>
+      <div class="feature-card c7" onclick="showFeature(7)">
+        <div class="feature-icon">&#128752;</div>
+        <h3>Works Offline</h3>
+        <p>Powered by Ollama. Works fully offline with local models — no internet required.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="micon" id="micon"></span>
+      <h3 id="mtitle"></h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="mbody"></div>
+  </div>
+</div>
+
+<!-- APP MODE -->
+<div class="app-mode" id="app">
+  <div class="app-header">
+    <span class="logo">V-Mind</span>
+    <input class="url-input" id="backendUrl" value="http://127.0.0.1:8765" placeholder="Backend URL (e.g. http://192.168.1.5:8765)">
+    <button class="back-btn" onclick="showLanding()">&#8592; Back</button>
+    <span class="status-dot" id="statusDot"></span>
+    <span class="connection-status" id="connStatus">Not connected</span>
+  </div>
+  <div class="main-app">
+    <div id="chat-panel">
+      <div id="chat-area">
+        <div id="chat-messages">
+          <div class="chat-msg assistant" style="color:var(--dim)">
+            Connect to your V-Mind backend server to start chatting.<br>
+            Enter the URL above and press Enter, or click Connect.<br><br>
+            <b style="color:var(--accent);font-size:15px">&#8593; Enter your backend URL above</b>
+          </div>
+        </div>
+      </div>
+      <div class="input-area">
+        <div class="input-row">
+          <input id="chatInput" type="text" placeholder="Type a message..." disabled onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+          <button id="sendBtn" onclick="sendChat()" disabled>Send</button>
+        </div>
+      </div>
+    </div>
+    <div id="info-panel">
+      <div class="info-card">
+        <h3>&#127760; How to connect</h3>
+        <p>1. Run V-Mind locally: <code>python start-server.bat</code> or <code>python run_server.py</code></p>
+        <p>2. It starts at <code>http://127.0.0.1:8765</code></p>
+        <p>3. Enter that URL above and start chatting!</p>
+      </div>
+      <div class="info-card">
+        <h3>&#9889; Capabilities</h3>
+        <ul class="capability-list">
+          <li>Chat with AI (local or remote models)</li>
+          <li>Browse files and folders on your PC</li>
+          <li>Search the web and fetch pages</li>
+          <li>Run terminal commands</li>
+          <li>Git operations (status, diff, commit, push)</li>
+          <li>System monitoring and PC control</li>
+          <li>Voice input and speech output</li>
+          <li>Works fully offline with Ollama</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>&#128161; Tips</h3>
+        <p>On the same WiFi? Use your local IP: <code>http://192.168.x.x:8765</code></p>
+        <p>Need a model? Run <code>ollama pull tinyllama</code></p>
+        <p>Set an API key for online mode: <code>V_MIND_API_KEY=sk-...</code></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const features = [
+  {
+    icon: '&#128187;',
+    title: 'PC Control',
+    desc: 'V-Mind can control your PC directly from chat. Launch applications, manage running processes, simulate mouse clicks and keyboard input, take screenshots, and execute system commands — all through natural language.',
+    demo: `<span class="prompt">You:</span> open chrome and search for AI news
+<span class="prompt">V-Mind:</span> Opening Chrome...
+<span class="output">[Launching C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe]</span>
+<span class="output">[Navigating to google.com]</span>
+<span class="prompt">V-Mind:</span> Searching for "latest AI news 2026"...
+<span class="output">[Typing query...]</span>
+<span class="output">[Press Enter]</span>
+<span class="highlight">Done! Chrome is open and searching for AI news.</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#128221;',
+    title: 'Code & Projects',
+    desc: 'V-Mind indexes your entire project, understands the codebase, and can write, review, debug, and fix code across any programming language. It also handles git operations like commit, push, pull, and diff.',
+    demo: `<span class="prompt">You:</span> fix the bug in web_app.py and commit
+<span class="prompt">V-Mind:</span> Reading <span class="highlight">web_app.py</span>...
+<span class="output">[Indexing project structure...]</span>
+<span class="output">[Analyzing 12 files...]</span>
+<span class="prompt">V-Mind:</span> Found the issue at <span class="highlight">line 47</span>. The WebSocket handler has a race condition.
+<span class="output">def handle_message(self, msg):</span>
+<span class="output">    async with self.lock:  # &lt;-- was missing</span>
+<span class="output">        await self.broadcast(msg)</span>
+<span class="prompt">V-Mind:</span> Fix applied. Running tests...
+<span class="highlight">Tests passed! Committed as "fix: resolve WebSocket race condition"</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#127760;',
+    title: 'Web Search',
+    desc: 'Ask V-Mind to search the web, fetch and summarize web pages, query Wikipedia, or find answers to any question — all without leaving your chat.',
+    demo: `<span class="prompt">You:</span> what's the latest on quantum computing?
+<span class="prompt">V-Mind:</span> Searching the web for <span class="highlight">"quantum computing 2026 breakthroughs"</span>...
+<span class="output">[Fetching 3 results...]</span>
+<span class="output">[Summarizing page 1...]</span>
+<span class="output">[Summarizing page 2...]</span>
+<span class="highlight">Here's what I found:</span>
+<span class="output">1. Google's Willow chip reached 10x error correction milestone</span>
+<span class="output">2. IBM released Qiskit 2.0 with live quantum cloud access</span>
+<span class="output">3. MIT demonstrated room-temperature quantum memory</span>
+<span class="output">Want me to dive deeper into any of these?</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#128200;',
+    title: 'System Monitor',
+    desc: 'Keep an eye on your system resources. V-Mind can show real-time CPU, RAM, disk usage, running processes, and alert you when resources are low.',
+    demo: `<span class="prompt">You:</span> show me system stats
+<span class="prompt">V-Mind:</span> <span class="highlight">System Status (live):</span>
+<span class="output">&#9632; CPU  : 34% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  load: 1.2</span>
+<span class="output">&#9632; RAM  : 62% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  8.2/16 GB</span>
+<span class="output">&#9632; DISK : 45% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  234/512 GB</span>
+<span class="output">&#9632; NET  : &#8593; 1.2 Mbps  &#8595; 3.8 Mbps</span>
+<span class="output">&#9632; TOP: chrome (3), vscode, python, ollama</span>
+<span class="highlight">All resources within normal range.</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#128736;&#65039;',
+    title: 'The Layer',
+    desc: 'A built-in Kali Linux command reference with 20+ penetration testing tools. V-Mind explains what each tool does, shows usage examples, and helps you run them safely.',
+    demo: `<span class="prompt">You:</span> show me layer tools for network scanning
+<span class="prompt">V-Mind:</span> Opening <span class="highlight">The Layer</span>...
+<span class="highlight">Network Scanning Tools:</span>
+<span class="output">  nmap     - Network discovery & security scanning</span>
+<span class="output">  netcat   - Read/write network connections</span>
+<span class="output">  tcpdump  - Capture network packets</span>
+<span class="output">  wireshark- Deep packet inspection (GUI)</span>
+<span class="prompt">You:</span> how do I scan my local network?
+<span class="prompt">V-Mind:</span> <span class="highlight">nmap -sn 192.168.1.0/24</span>
+<span class="output">This pings all 254 hosts in your subnet and</span>
+<span class="output">shows which ones are online. No ports are scanned.</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#128218;',
+    title: 'Library',
+    desc: 'A curated knowledge library with downloadable books and quick-reference guides covering Python, Git, Linux, algorithms, and more — accessible directly through V-Mind.',
+    demo: `<span class="prompt">You:</span> open the git reference guide
+<span class="prompt">V-Mind:</span> Opening <span class="highlight">Git Mastery - V-Mind.md</span>...
+<span class="output"># Git Mastery - Quick Reference</span>
+<span class="output">## Basics</span>
+<span class="output">  git init           Initialize a repo</span>
+<span class="output">  git clone &lt;url&gt;    Clone a remote repo</span>
+<span class="output">  git add .          Stage all changes</span>
+<span class="output">  git commit -m "msg" Commit staged changes</span>
+<span class="output">  git push           Push to remote</span>
+<span class="output">  git pull           Pull from remote</span>
+<span class="highlight">Available guides: Python 3, Git, Linux CLI, Algorithms</span>
+<span class="output">Which one would you like to explore?</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#127911;',
+    title: 'Voice I/O',
+    desc: 'Talk to V-Mind using your microphone and hear responses through speech synthesis. True hands-free interaction — just speak and listen.',
+    demo: `<span class="prompt">You:</span> [voice input] "what's the weather today?"
+<span class="prompt">V-Mind:</span> [voice output]
+<span class="output">"Let me check the weather for you..."</span>
+<span class="output">[Searching weather API...]</span>
+<span class="prompt">V-Mind:</span> <span class="highlight">Today's forecast:</span>
+<span class="output">&#9728;&#65039; Sunny, 28&deg;C (feels like 31&deg;C)</span>
+<span class="output">&#9729;&#65039; No rain expected</span>
+<span class="output">&#127788;&#65039; Wind: 12 km/h SE</span>
+<span class="output">[Speech] "Today will be sunny with a high of 28 degrees."</span><span class="cursor"></span>`
+  },
+  {
+    icon: '&#128752;',
+    title: 'Works Offline',
+    desc: 'Powered by Ollama. Run V-Mind entirely offline with local LLM models like TinyLlama, Qwen, or CodeLlama. No internet connection required after setup.',
+    demo: `<span class="prompt">You:</span> what model are you running?
+<span class="prompt">V-Mind:</span> I'm running <span class="highlight">Ollama</span> with <span class="highlight">tinyllama</span> (1.1B params) locally.
+<span class="output">Status:</span>
+<span class="output">  &#9632; Mode:   <span class="highlight">Offline</span> (no internet needed)</span>
+<span class="output">  &#9632; Model:  tinyllama (Q4_K_M quantized)</span>
+<span class="output">  &#9632; Speed:  24 tok/s on CPU</span>
+<span class="output">  &#9632; RAM:    780 MB used</span>
+<span class="output">Your data never leaves your machine.</span>
+<span class="output">To switch models: <span class="highlight">ollama pull qwen2.5:7b</span></span><span class="cursor"></span>`
+  }
+];
+
+function showFeature(idx) {
+  const f = features[idx];
+  document.getElementById('micon').innerHTML = f.icon;
+  document.getElementById('mtitle').textContent = f.title;
+  document.getElementById('mbody').innerHTML = `<p class="desc">${f.desc}</p><div class="demo-box">${f.demo}</div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// App state
+let backendUrl = localStorage.getItem('vmBackendUrl') || 'http://127.0.0.1:8765';
+let loading = false;
+const urlInput = document.getElementById('backendUrl');
+const statusDot = document.getElementById('statusDot');
+const connStatus = document.getElementById('connStatus');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const chatMessages = document.getElementById('chat-messages');
+
+urlInput.value = backendUrl;
+
+const origFetch = window.fetch;
+window.fetch = function(url, opts) {
+  if (typeof url === 'string' && url.startsWith('/api/')) {
+    url = backendUrl.replace(/\/+$/, '') + url;
+  }
+  return origFetch.call(window, url, opts);
+};
+
+function showLanding() {
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function openApp() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  checkConnection();
+}
+
+urlInput.addEventListener('change', () => {
+  backendUrl = urlInput.value.replace(/\/+$/, '');
+  localStorage.setItem('vmBackendUrl', backendUrl);
+  checkConnection();
+});
+
+async function checkConnection() {
+  statusDot.className = 'status-dot';
+  connStatus.textContent = 'Connecting...';
+  try {
+    let r = await origFetch(backendUrl + '/api/status', { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new Error('Not OK');
+    await r.json();
+    statusDot.classList.add('online');
+    connStatus.textContent = 'Online';
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    chatInput.focus();
+    chatMessages.innerHTML = '<div class="chat-msg assistant" style="color:var(--dim)">Connected! Start chatting with V-Mind.</div>';
+  } catch(e) {
+    statusDot.classList.add('offline');
+    connStatus.textContent = 'Offline - ' + e.message;
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+  }
+}
+
+async function sendChat() {
+  let text = chatInput.value.trim();
+  if (!text || loading) return;
+  chatInput.value = '';
+  loading = true;
+  sendBtn.disabled = true;
+  addMsg(text, 'user');
+  let msgEl = addMsg('Thinking...', 'assistant');
+  try {
+    let r = await origFetch(backendUrl + '/api/chat/stream', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: text, session_id: 'vercel-' + Date.now(), file_ids: [], mode: 'vibe', backend: 'auto', folder: ''}),
+      signal: AbortSignal.timeout(60000)
+    });
+    let reader = r.body.getReader();
+    let decoder = new TextDecoder();
+    let full = '';
+    while (true) {
+      let {done, value} = await reader.read();
+      if (done) break;
+      for (let line of decoder.decode(value).trim().split('\n')) {
+        try {
+          let ev = JSON.parse(line);
+          if (ev.type === 'token') { full += ev.content; msgEl.textContent = full; }
+          else if (ev.type === 'done') full = ev.content || full;
+        } catch(_) {}
+      }
+    }
+    msgEl.textContent = full || '(no response)';
+  } catch(e) {
+    msgEl.textContent = 'Error: ' + e.message;
+  }
+  loading = false;
+  sendBtn.disabled = false;
+  chatInput.focus();
+}
+
+function addMsg(text, role) {
+  let d = document.createElement('div');
+  d.className = 'chat-msg ' + role;
+  d.textContent = text;
+  chatMessages.appendChild(d);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return d;
+}
+checkConnection();
+</script>
+</body>
+</html>
