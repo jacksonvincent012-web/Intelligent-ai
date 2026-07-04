@@ -51,7 +51,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 #chat-inner{max-width:700px;margin:0 auto;padding:0 16px}
 #cover-page{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;background:rgba(13,17,23,.85);transition:opacity .3s}
 #cover-page.hidden{opacity:0;pointer-events:none}
-.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(88,166,255,.05) 0%,transparent 70%)}
+.cover-bg{position:absolute;inset:0;background-size:cover;background-position:center}
 .cover-content{text-align:center;position:relative;z-index:1;padding:20px}
 .cover-logo{margin-bottom:16px}
 .cover-title{font-size:32px;font-weight:800;background:linear-gradient(135deg,#3fb950,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -305,6 +305,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
         <label>Mode:</label>
         <button class="mode-tab active" id="modeBackend" onclick="setMode('backend')">Backend</button>
         <button class="mode-tab" id="modeApi" onclick="setMode('api')">API Key</button>
+        <button class="mode-tab" id="modeCloud" onclick="setAppMode('cloud')" style="background:var(--green);color:#000;font-weight:600">Cloud</button>
         <div id="apiSettings">
           <select id="apiProvider" style="width:auto"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option></select>
           <input id="apiKeyInput" type="password" placeholder="sk-..." style="width:140px">
@@ -315,7 +316,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
       <div id="chat-area">
         <div id="chat-inner"></div>
         <div id="cover-page">
-          <div class="cover-bg"></div>
+          <div class="cover-bg" id="cover-bg"></div>
           <div class="cover-content">
             <div class="cover-logo"><svg viewBox="0 0 40 40" width="48" height="48"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3fb950"/><stop offset="100%" stop-color="#58a6ff"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><text x="20" y="27" text-anchor="middle" fill="#0d1117" font-size="22" font-weight="900" font-family="sans-serif">V</text></svg></div>
             <h1 class="cover-title">V-Mind</h1>
@@ -327,7 +328,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
               <button class="cover-btn" onclick="openFolder()">&#128193; Open Folder</button>
               <button class="cover-btn" onclick="switchView('layer')">&#128736; The Layer</button>
             </div>
-            <div class="cover-footer"><span>Type anything to begin</span> <span class="dot">&middot;</span> <span>Backend URL or API Key</span></div>
+            <div class="cover-footer"><span>Type anything to begin</span> <span class="dot">&middot;</span> <span>Cloud &middot; Backend &middot; API Key</span></div>
           </div>
         </div>
       </div>
@@ -436,9 +437,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 <script>
 const CATS={recon:5,scanning:4,exploitation:4,post:4,web:3,network:6}
 const BG_IMAGES=['/static/kali1.png','/static/kali2.png','/static/kali3.png','/static/kali4.png','/static/kali5.png','/static/kali6.png','/static/kali7.png','/static/kali8.png','/static/kali10.png','/static/dragon1.jpg','/static/dragon2.jpg','/static/dragon3.jpg']
-const BG_PANELS=['bg-chat','bg-review','bg-files','bg-layer','bg-library','bg-browser']
+const BG_PANELS=['bg-chat','bg-review','bg-files','bg-layer','bg-library','bg-browser','cover-bg']
 function shuffleBg(){let a=[...BG_IMAGES];for(let i=a.length-1;i>0;i--){let j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function setBg(el,url){el.style.backgroundImage='url('+url+')';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.opacity='.07'}
+function setBg(el,url){el.style.backgroundImage='url('+url+')';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.opacity='.15'}
 (function(){let imgs=shuffleBg();for(let i=0;i<BG_PANELS.length;i++){let e=document.getElementById(BG_PANELS[i]);if(e)setBg(e,imgs[i%imgs.length])}})()
 let bgCycleIdx=0
 setInterval(()=>{bgCycleIdx=(bgCycleIdx+1)%BG_IMAGES.length;let imgs=shuffleBg();for(let i=0;i<BG_PANELS.length;i++){let e=document.getElementById(BG_PANELS[i]);if(e)setBg(e,imgs[(bgCycleIdx+i)%imgs.length])}},3600000)
@@ -506,10 +507,14 @@ function setAppMode(m){
   appMode=m;localStorage.setItem('vmAppMode',m)
   document.getElementById('modeBackend').className='mode-tab'+(m==='backend'?' active':'')
   document.getElementById('modeApi').className='mode-tab'+(m==='api'?' active':'')
+  let cl=document.getElementById('modeCloud');if(cl)cl.className='mode-tab'+(m==='cloud'?' active':'')
   document.getElementById('apiSettings').style.display=m==='api'?'flex':'none'
   document.getElementById('backendUrl').style.display=m==='backend'?'block':'none'
-  document.getElementById('chat-input').disabled=m==='api'&&!apiKey
-  document.getElementById('send-btn').disabled=m==='api'&&!apiKey
+  let enabled=m==='cloud'||(m==='api'&&apiKey)||m==='backend'
+  document.getElementById('chat-input').disabled=!enabled
+  document.getElementById('send-btn').disabled=!enabled
+  if(m==='cloud'){document.getElementById('chat-input').placeholder='Message V-Mind (Cloud)...';document.getElementById('chat-input').focus()}
+  else document.getElementById('chat-input').placeholder='Message V-Mind...'
   if(m==='api'&&apiKey)document.getElementById('chat-input').focus()
 }
 
@@ -807,7 +812,11 @@ async function sendMsg(){
   try{
     let folder=document.getElementById('file-path-input').value
     let r
-    if(appMode==='api'){
+    if(appMode==='cloud'){
+      const model=document.getElementById('modelSelect').value||'openai/gpt-4o-mini'
+      r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI agent.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
+      if(!r.ok){let err;try{err=(await r.json()).error}catch(e){err=await r.text()};addMsg('Cloud Error: '+err,'assistant');loading=false;document.getElementById('send-btn').disabled=false;document.getElementById('chat-input').focus();return}
+    }else if(appMode==='api'){
       const model=document.getElementById('modelSelect').value
       const baseUrl=apiProvider==='openrouter'?'https://openrouter.ai/api/v1':'https://api.openai.com/v1'
       r=await origFetch(baseUrl+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,...(apiProvider==='openrouter'?{'HTTP-Referer':window.location.origin}:{})},body:JSON.stringify({model,messages:[{role:'system',content:'You are V-Mind, a super-intelligent AI agent.'},{role:'user',content:text+'. Project folder: '+folder}],stream:true}),signal:AbortSignal.timeout(60000)})
@@ -821,7 +830,7 @@ async function sendMsg(){
       let{done,value}=await reader.read()
       if(done)break
       let chunk=decoder.decode(value)
-      if(appMode==='api'){
+      if(appMode==='api'||appMode==='cloud'){
         for(let line of chunk.split('\n').filter(l=>l.startsWith('data: '))){
           let data=line.slice(6);if(data==='[DONE]'){doneReceived=true;break}
           try{let content=JSON.parse(data).choices?.[0]?.delta?.content||'';if(content){full+=content;if(!msgEl){let c=document.getElementById('chat-inner');msgEl=document.createElement('div');msgEl.className='chat-msg assistant';msgEl.textContent=full;c.appendChild(msgEl);document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight}else msgEl.textContent=full}}catch(_){}
@@ -832,8 +841,8 @@ async function sendMsg(){
         }
       }
     }
-    if(!doneReceived&&!appMode.startsWith('api')){if(!msgEl)addMsg(full||'No response.','assistant');else{msgEl.remove();addMsg(full,'assistant')}}
-    if(appMode==='api'){doneReceived=true;if(msgEl&&full&&msgEl.textContent!==full){msgEl.textContent=full}}
+    if(!doneReceived&&appMode!=='api'&&appMode!=='cloud'){if(!msgEl)addMsg(full||'No response.','assistant');else{msgEl.remove();addMsg(full,'assistant')}}
+    if(appMode==='api'||appMode==='cloud'){doneReceived=true;if(msgEl&&full&&msgEl.textContent!==full){msgEl.textContent=full}}
     speakText(full)
     let elapsed=Date.now()-t0
     if(elapsed>5000&&'Notification'in window&&Notification.permission==='granted')new Notification('V-Mind replied',{body:'('+(elapsed/1000).toFixed(1)+'s) '+(full||'').slice(0,80)+'...'})
