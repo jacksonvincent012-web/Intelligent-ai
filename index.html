@@ -86,6 +86,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .input-row button:hover{opacity:.85}
 .input-row button:disabled{opacity:.4;cursor:not-allowed}
 
+/* SETTINGS TAB */
+.settings-bar{display:flex;gap:8px;align-items:center;padding:6px 16px;background:#0a0e14;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.settings-bar label{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.settings-bar select,.settings-bar input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.settings-bar select:focus,.settings-bar input:focus{border-color:var(--accent)}
+.settings-bar .mode-tab{padding:4px 14px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);transition:.2s}
+.settings-bar .mode-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.settings-bar .mode-tab:hover:not(.active){border-color:var(--accent);color:var(--text)}
+
 #info-panel{flex:3;display:flex;flex-direction:column;padding:20px;overflow-y:auto}
 .info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
 .info-card h3{font-size:15px;margin-bottom:8px;color:var(--text)}
@@ -184,14 +193,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
     <span class="status-dot" id="statusDot"></span>
     <span class="connection-status" id="connStatus">Not connected</span>
   </div>
+  <div class="settings-bar">
+    <label>Mode:</label>
+    <button class="mode-tab active" id="modeBackend" onclick="setMode('backend')">Backend</button>
+    <button class="mode-tab" id="modeApi" onclick="setMode('api')">API Key</button>
+    <div id="apiSettings" style="display:none;flex:1;display:none;gap:8px;align-items:center">
+      <label>Provider:</label>
+      <select id="apiProvider">
+        <option value="openai">OpenAI</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+      <label>Key:</label>
+      <input id="apiKeyInput" type="password" placeholder="sk-..." style="flex:1;min-width:120px">
+      <label>Model:</label>
+      <select id="modelSelect">
+        <option value="gpt-4o-mini">GPT-4o Mini</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+        <option value="llama-3.3-70b">Llama 3.3 70B</option>
+      </select>
+    </div>
+  </div>
   <div class="main-app">
     <div id="chat-panel">
       <div id="chat-area">
         <div id="chat-messages">
           <div class="chat-msg assistant" style="color:var(--dim)">
-            Connect to your V-Mind backend server to start chatting.<br>
-            Enter the URL above and press Enter, or click Connect.<br><br>
-            <b style="color:var(--accent);font-size:15px">&#8593; Enter your backend URL above</b>
+            Connect to your V-Mind backend or enter an API key to start chatting.<br><br>
+            <b style="color:var(--accent);font-size:15px">&#9889; Choose "Backend" or "API Key" mode above</b>
           </div>
         </div>
       </div>
@@ -205,9 +234,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
     <div id="info-panel">
       <div class="info-card">
         <h3>&#127760; How to connect</h3>
-        <p>1. Run V-Mind locally: <code>python start-server.bat</code> or <code>python run_server.py</code></p>
-        <p>2. It starts at <code>http://127.0.0.1:8765</code></p>
-        <p>3. Enter that URL above and start chatting!</p>
+        <p><b>Backend mode</b> — Run V-Mind locally (<code>python run_server.py</code>), enter the URL.</p>
+        <p><b>API Key mode</b> — Enter any OpenAI/OpenRouter key and chat directly from the browser. No backend needed.</p>
+        <p>Your key is stored locally and never sent anywhere except the API provider.</p>
       </div>
       <div class="info-card">
         <h3>&#9889; Capabilities</h3>
@@ -222,134 +251,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
           <li>Works fully offline with Ollama</li>
         </ul>
       </div>
-      <div class="info-card">
-        <h3>&#128161; Tips</h3>
-        <p>On the same WiFi? Use your local IP: <code>http://192.168.x.x:8765</code></p>
-        <p>Need a model? Run <code>ollama pull tinyllama</code></p>
-        <p>Set an API key for online mode: <code>V_MIND_API_KEY=sk-...</code></p>
-      </div>
     </div>
   </div>
 </div>
 
 <script>
+// Feature demos
 const features = [
   {
-    icon: '&#128187;',
-    title: 'PC Control',
+    icon: '&#128187;', title: 'PC Control',
     desc: 'V-Mind can control your PC directly from chat. Launch applications, manage running processes, simulate mouse clicks and keyboard input, take screenshots, and execute system commands — all through natural language.',
-    demo: `<span class="prompt">You:</span> open chrome and search for AI news
-<span class="prompt">V-Mind:</span> Opening Chrome...
-<span class="output">[Launching C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe]</span>
-<span class="output">[Navigating to google.com]</span>
-<span class="prompt">V-Mind:</span> Searching for "latest AI news 2026"...
-<span class="output">[Typing query...]</span>
-<span class="output">[Press Enter]</span>
-<span class="highlight">Done! Chrome is open and searching for AI news.</span><span class="cursor"></span>`
+    demo: '<span class="prompt">You:</span> open chrome and search for AI news\n<span class="prompt">V-Mind:</span> Opening Chrome...\n<span class="output">[Launching Chrome]</span>\n<span class="output">[Navigating to google.com]</span>\n<span class="prompt">V-Mind:</span> Searching for "latest AI news 2026"...\n<span class="highlight">Done! Chrome is open and searching.</span><span class="cursor"></span>'
   },
   {
-    icon: '&#128221;',
-    title: 'Code & Projects',
-    desc: 'V-Mind indexes your entire project, understands the codebase, and can write, review, debug, and fix code across any programming language. It also handles git operations like commit, push, pull, and diff.',
-    demo: `<span class="prompt">You:</span> fix the bug in web_app.py and commit
-<span class="prompt">V-Mind:</span> Reading <span class="highlight">web_app.py</span>...
-<span class="output">[Indexing project structure...]</span>
-<span class="output">[Analyzing 12 files...]</span>
-<span class="prompt">V-Mind:</span> Found the issue at <span class="highlight">line 47</span>. The WebSocket handler has a race condition.
-<span class="output">def handle_message(self, msg):</span>
-<span class="output">    async with self.lock:  # &lt;-- was missing</span>
-<span class="output">        await self.broadcast(msg)</span>
-<span class="prompt">V-Mind:</span> Fix applied. Running tests...
-<span class="highlight">Tests passed! Committed as "fix: resolve WebSocket race condition"</span><span class="cursor"></span>`
+    icon: '&#128221;', title: 'Code & Projects',
+    desc: 'V-Mind indexes your entire project, understands the codebase, and can write, review, debug, and fix code across any programming language. It also handles git operations.',
+    demo: '<span class="prompt">You:</span> fix the bug in web_app.py and commit\n<span class="prompt">V-Mind:</span> Found the issue at <span class="highlight">line 47</span>. Race condition in WebSocket handler.\n<span class="output">Fix applied. Running tests...</span>\n<span class="highlight">Tests passed! Committed.</span><span class="cursor"></span>'
   },
   {
-    icon: '&#127760;',
-    title: 'Web Search',
+    icon: '&#127760;', title: 'Web Search',
     desc: 'Ask V-Mind to search the web, fetch and summarize web pages, query Wikipedia, or find answers to any question — all without leaving your chat.',
-    demo: `<span class="prompt">You:</span> what's the latest on quantum computing?
-<span class="prompt">V-Mind:</span> Searching the web for <span class="highlight">"quantum computing 2026 breakthroughs"</span>...
-<span class="output">[Fetching 3 results...]</span>
-<span class="output">[Summarizing page 1...]</span>
-<span class="output">[Summarizing page 2...]</span>
-<span class="highlight">Here's what I found:</span>
-<span class="output">1. Google's Willow chip reached 10x error correction milestone</span>
-<span class="output">2. IBM released Qiskit 2.0 with live quantum cloud access</span>
-<span class="output">3. MIT demonstrated room-temperature quantum memory</span>
-<span class="output">Want me to dive deeper into any of these?</span><span class="cursor"></span>`
+    demo: '<span class="prompt">You:</span> what\'s the latest on quantum computing?\n<span class="prompt">V-Mind:</span> Searching <span class="highlight">"quantum computing 2026"</span>...\n<span class="output">1. Google Willow chip: 10x error correction</span>\n<span class="output">2. IBM Qiskit 2.0 with live quantum cloud</span>\n<span class="output">3. MIT room-temperature quantum memory</span>\n<span class="highlight">Want me to dive deeper into any?</span><span class="cursor"></span>'
   },
   {
-    icon: '&#128200;',
-    title: 'System Monitor',
-    desc: 'Keep an eye on your system resources. V-Mind can show real-time CPU, RAM, disk usage, running processes, and alert you when resources are low.',
-    demo: `<span class="prompt">You:</span> show me system stats
-<span class="prompt">V-Mind:</span> <span class="highlight">System Status (live):</span>
-<span class="output">&#9632; CPU  : 34% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  load: 1.2</span>
-<span class="output">&#9632; RAM  : 62% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  8.2/16 GB</span>
-<span class="output">&#9632; DISK : 45% &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;  234/512 GB</span>
-<span class="output">&#9632; NET  : &#8593; 1.2 Mbps  &#8595; 3.8 Mbps</span>
-<span class="output">&#9632; TOP: chrome (3), vscode, python, ollama</span>
-<span class="highlight">All resources within normal range.</span><span class="cursor"></span>`
+    icon: '&#128200;', title: 'System Monitor',
+    desc: 'Real-time CPU, RAM, disk usage, running processes, and alerts when resources are low.',
+    demo: '<span class="prompt">You:</span> show me system stats\n<span class="prompt">V-Mind:</span> <span class="highlight">System Status:</span>\n<span class="output">CPU: 34%  RAM: 62% (8.2/16 GB)</span>\n<span class="output">DISK: 45% (234/512 GB)</span>\n<span class="output">NET: &#8593; 1.2 Mbps  &#8595; 3.8 Mbps</span>\n<span class="output">TOP: chrome (3), vscode, python, ollama</span><span class="cursor"></span>'
   },
   {
-    icon: '&#128736;&#65039;',
-    title: 'The Layer',
-    desc: 'A built-in Kali Linux command reference with 20+ penetration testing tools. V-Mind explains what each tool does, shows usage examples, and helps you run them safely.',
-    demo: `<span class="prompt">You:</span> show me layer tools for network scanning
-<span class="prompt">V-Mind:</span> Opening <span class="highlight">The Layer</span>...
-<span class="highlight">Network Scanning Tools:</span>
-<span class="output">  nmap     - Network discovery & security scanning</span>
-<span class="output">  netcat   - Read/write network connections</span>
-<span class="output">  tcpdump  - Capture network packets</span>
-<span class="output">  wireshark- Deep packet inspection (GUI)</span>
-<span class="prompt">You:</span> how do I scan my local network?
-<span class="prompt">V-Mind:</span> <span class="highlight">nmap -sn 192.168.1.0/24</span>
-<span class="output">This pings all 254 hosts in your subnet and</span>
-<span class="output">shows which ones are online. No ports are scanned.</span><span class="cursor"></span>`
+    icon: '&#128736;&#65039;', title: 'The Layer',
+    desc: 'Built-in Kali Linux command reference with 20+ penetration testing tools. V-Mind explains what each tool does, shows usage, and helps run them safely.',
+    demo: '<span class="prompt">You:</span> how do I scan my local network?\n<span class="prompt">V-Mind:</span> <span class="highlight">nmap -sn 192.168.1.0/24</span>\n<span class="output">Pings all 254 hosts in your subnet and shows</span>\n<span class="output">which are online. No ports scanned.</span><span class="cursor"></span>'
   },
   {
-    icon: '&#128218;',
-    title: 'Library',
-    desc: 'A curated knowledge library with downloadable books and quick-reference guides covering Python, Git, Linux, algorithms, and more — accessible directly through V-Mind.',
-    demo: `<span class="prompt">You:</span> open the git reference guide
-<span class="prompt">V-Mind:</span> Opening <span class="highlight">Git Mastery - V-Mind.md</span>...
-<span class="output"># Git Mastery - Quick Reference</span>
-<span class="output">## Basics</span>
-<span class="output">  git init           Initialize a repo</span>
-<span class="output">  git clone &lt;url&gt;    Clone a remote repo</span>
-<span class="output">  git add .          Stage all changes</span>
-<span class="output">  git commit -m "msg" Commit staged changes</span>
-<span class="output">  git push           Push to remote</span>
-<span class="output">  git pull           Pull from remote</span>
-<span class="highlight">Available guides: Python 3, Git, Linux CLI, Algorithms</span>
-<span class="output">Which one would you like to explore?</span><span class="cursor"></span>`
+    icon: '&#128218;', title: 'Library',
+    desc: 'Curated knowledge library with downloadable books and quick-reference guides for Python, Git, Linux, algorithms, and more.',
+    demo: '<span class="prompt">You:</span> open the git reference guide\n<span class="prompt">V-Mind:</span> <span class="highlight">Git Mastery - Quick Reference</span>\n<span class="output">git init           Initialize a repo</span>\n<span class="output">git clone &lt;url&gt;    Clone a remote repo</span>\n<span class="output">git add .          Stage all changes</span>\n<span class="output">git commit -m ""   Commit staged changes</span>\n<span class="output">git push           Push to remote</span><span class="cursor"></span>'
   },
   {
-    icon: '&#127911;',
-    title: 'Voice I/O',
-    desc: 'Talk to V-Mind using your microphone and hear responses through speech synthesis. True hands-free interaction — just speak and listen.',
-    demo: `<span class="prompt">You:</span> [voice input] "what's the weather today?"
-<span class="prompt">V-Mind:</span> [voice output]
-<span class="output">"Let me check the weather for you..."</span>
-<span class="output">[Searching weather API...]</span>
-<span class="prompt">V-Mind:</span> <span class="highlight">Today's forecast:</span>
-<span class="output">&#9728;&#65039; Sunny, 28&deg;C (feels like 31&deg;C)</span>
-<span class="output">&#9729;&#65039; No rain expected</span>
-<span class="output">&#127788;&#65039; Wind: 12 km/h SE</span>
-<span class="output">[Speech] "Today will be sunny with a high of 28 degrees."</span><span class="cursor"></span>`
+    icon: '&#127911;', title: 'Voice I/O',
+    desc: 'Talk to V-Mind with your microphone and hear responses through speech synthesis. Hands-free interaction.',
+    demo: '<span class="prompt">You:</span> [voice] "what\'s the weather today?"\n<span class="prompt">V-Mind:</span> <span class="highlight">Today\'s forecast:</span>\n<span class="output">&#9728;&#65039; Sunny, 28&deg;C (feels like 31&deg;C)</span>\n<span class="output">&#9729;&#65039; No rain expected</span>\n<span class="output">[Speech] "Today will be sunny with a high of 28."</span><span class="cursor"></span>'
   },
   {
-    icon: '&#128752;',
-    title: 'Works Offline',
-    desc: 'Powered by Ollama. Run V-Mind entirely offline with local LLM models like TinyLlama, Qwen, or CodeLlama. No internet connection required after setup.',
-    demo: `<span class="prompt">You:</span> what model are you running?
-<span class="prompt">V-Mind:</span> I'm running <span class="highlight">Ollama</span> with <span class="highlight">tinyllama</span> (1.1B params) locally.
-<span class="output">Status:</span>
-<span class="output">  &#9632; Mode:   <span class="highlight">Offline</span> (no internet needed)</span>
-<span class="output">  &#9632; Model:  tinyllama (Q4_K_M quantized)</span>
-<span class="output">  &#9632; Speed:  24 tok/s on CPU</span>
-<span class="output">  &#9632; RAM:    780 MB used</span>
-<span class="output">Your data never leaves your machine.</span>
-<span class="output">To switch models: <span class="highlight">ollama pull qwen2.5:7b</span></span><span class="cursor"></span>`
+    icon: '&#128752;', title: 'Works Offline',
+    desc: 'Powered by Ollama. Run V-Mind entirely offline with local models like TinyLlama, Qwen, or CodeLlama.',
+    demo: '<span class="prompt">You:</span> what model are you running?\n<span class="prompt">V-Mind:</span> Running <span class="highlight">tinyllama</span> (1.1B) locally via Ollama\n<span class="output">Mode: Offline (no internet needed)</span>\n<span class="output">Speed: 24 tok/s on CPU</span>\n<span class="output">RAM: 780 MB used</span>\n<span class="output">Your data never leaves your machine.</span><span class="cursor"></span>'
   }
 ];
 
@@ -364,7 +311,6 @@ function showFeature(idx) {
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
 }
-
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
@@ -373,16 +319,25 @@ document.addEventListener('keydown', function(e) {
 });
 
 // App state
+let mode = 'backend'; // 'backend' | 'api'
 let backendUrl = localStorage.getItem('vmBackendUrl') || 'http://127.0.0.1:8765';
+let apiKey = localStorage.getItem('vmApiKey') || '';
+let apiProvider = localStorage.getItem('vmApiProvider') || 'openai';
 let loading = false;
+
 const urlInput = document.getElementById('backendUrl');
 const statusDot = document.getElementById('statusDot');
 const connStatus = document.getElementById('connStatus');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 const chatMessages = document.getElementById('chat-messages');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const apiProviderEl = document.getElementById('apiProvider');
+const modelSelect = document.getElementById('modelSelect');
 
 urlInput.value = backendUrl;
+apiKeyInput.value = apiKey;
+apiProviderEl.value = apiProvider;
 
 const origFetch = window.fetch;
 window.fetch = function(url, opts) {
@@ -392,6 +347,45 @@ window.fetch = function(url, opts) {
   return origFetch.call(window, url, opts);
 };
 
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeBackend').className = 'mode-tab' + (m === 'backend' ? ' active' : '');
+  document.getElementById('modeApi').className = 'mode-tab' + (m === 'api' ? ' active' : '');
+  document.getElementById('apiSettings').style.display = m === 'api' ? 'flex' : 'none';
+  document.getElementById('backendUrl').style.display = m === 'backend' ? 'block' : 'none';
+  if (m === 'api') {
+    chatInput.disabled = false;
+    sendBtn.disabled = false;
+    connStatus.textContent = apiKey ? 'API key set' : 'Enter API key';
+    statusDot.className = 'status-dot' + (apiKey ? ' online' : '');
+    if (apiKey) chatInput.focus();
+  } else {
+    checkConnection();
+  }
+}
+
+apiKeyInput.addEventListener('change', () => {
+  apiKey = apiKeyInput.value.trim();
+  localStorage.setItem('vmApiKey', apiKey);
+  if (mode === 'api') {
+    connStatus.textContent = apiKey ? 'API key set' : 'Enter API key';
+    statusDot.className = 'status-dot' + (apiKey ? ' online' : '');
+    chatInput.disabled = !apiKey;
+    sendBtn.disabled = !apiKey;
+    if (apiKey) chatInput.focus();
+  }
+});
+
+apiProviderEl.addEventListener('change', () => {
+  apiProvider = apiProviderEl.value;
+  localStorage.setItem('vmApiProvider', apiProvider);
+  if (apiProvider === 'openrouter') {
+    modelSelect.innerHTML = '<option value="openai/gpt-4o">GPT-4o</option><option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option><option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option><option value="mistralai/mistral-7b-instruct">Mistral 7B</option>';
+  } else {
+    modelSelect.innerHTML = '<option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option><option value="gpt-4.1">GPT-4.1</option>';
+  }
+});
+
 function showLanding() {
   document.getElementById('landing').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
@@ -400,7 +394,8 @@ function showLanding() {
 function openApp() {
   document.getElementById('landing').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  checkConnection();
+  if (mode === 'backend') checkConnection();
+  else setMode('api');
 }
 
 urlInput.addEventListener('change', () => {
@@ -438,11 +433,24 @@ async function sendChat() {
   sendBtn.disabled = true;
   addMsg(text, 'user');
   let msgEl = addMsg('Thinking...', 'assistant');
+
+  if (mode === 'api') {
+    await sendApiChat(text, msgEl);
+  } else {
+    await sendBackendChat(text, msgEl);
+  }
+
+  loading = false;
+  sendBtn.disabled = false;
+  chatInput.focus();
+}
+
+async function sendBackendChat(text, msgEl) {
   try {
     let r = await origFetch(backendUrl + '/api/chat/stream', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({message: text, session_id: 'vercel-' + Date.now(), file_ids: [], mode: 'vibe', backend: 'auto', folder: ''}),
+      body: JSON.stringify({message: text, session_id: 'vm-' + Date.now(), file_ids: [], mode: 'vibe', backend: 'auto', folder: ''}),
       signal: AbortSignal.timeout(60000)
     });
     let reader = r.body.getReader();
@@ -463,9 +471,68 @@ async function sendChat() {
   } catch(e) {
     msgEl.textContent = 'Error: ' + e.message;
   }
-  loading = false;
-  sendBtn.disabled = false;
-  chatInput.focus();
+}
+
+async function sendApiChat(text, msgEl) {
+  const model = modelSelect.value;
+  const baseUrl = apiProvider === 'openrouter'
+    ? 'https://openrouter.ai/api/v1'
+    : 'https://api.openai.com/v1';
+
+  try {
+    let r = await origFetch(baseUrl + '/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+        ...(apiProvider === 'openrouter' ? { 'HTTP-Referer': window.location.origin } : {})
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: 'You are V-Mind, a super-intelligent AI agent. Be concise, helpful, and use markdown when appropriate.' },
+          { role: 'user', content: text }
+        ],
+        stream: true
+      }),
+      signal: AbortSignal.timeout(60000)
+    });
+
+    if (!r.ok) {
+      let err = await r.text();
+      msgEl.textContent = 'API Error: ' + (JSON.parse(err).error?.message || err);
+      return;
+    }
+
+    let reader = r.body.getReader();
+    let decoder = new TextDecoder();
+    let full = '';
+
+    while (true) {
+      let {done, value} = await reader.read();
+      if (done) break;
+      let chunk = decoder.decode(value);
+      let lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+      for (let line of lines) {
+        let data = line.slice(6);
+        if (data === '[DONE]') break;
+        try {
+          let parsed = JSON.parse(data);
+          let content = parsed.choices?.[0]?.delta?.content || '';
+          if (content) {
+            full += content;
+            msgEl.textContent = full;
+          }
+        } catch(_) {}
+      }
+    }
+
+    if (!full && msgEl.textContent === 'Thinking...') {
+      msgEl.textContent = '(empty response)';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 function addMsg(text, role) {
@@ -476,7 +543,8 @@ function addMsg(text, role) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
   return d;
 }
-checkConnection();
+
+setMode('backend');
 </script>
 </body>
 </html>
