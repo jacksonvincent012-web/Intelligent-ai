@@ -70,8 +70,8 @@ https://vm-deploy.vercel.app/
 - Speech-to-text via browser SpeechRecognition API
 - Text-to-speech via Windows TTS and browser SpeechSynthesis
 - Hands-free interaction with voice commands
-<img width="1920" height="1032" alt="Screenshot 2026-06-27 000719" src="https://github.com/user-attachments/assets/ca80530d-aec3-4edb-aa57-eca2dcc9b654" />
 
+<img width="469" height="186" alt="image" src="https://github.com/user-attachments/assets/8e534a12-2541-47b9-909f-cb20270b4547" />
 ---
 
 ## Architecture
@@ -109,7 +109,7 @@ https://vm-deploy.vercel.app/
 
 
 ```
-<img width="469" height="186" alt="image" src="https://github.com/user-attachments/assets/8e534a12-2541-47b9-909f-cb20270b4547" />
+<img width="1920" height="1080" alt="Screenshot 2026-07-17 115403" src="https://github.com/user-attachments/assets/7ff9cebc-b92f-4fec-a260-a4d50809d9a2" />
 
 AM SORRY NO CODE FOR U TO CLONE😁
 <img width="198" height="102" alt="Screenshot 2026-07-17 112600" src="https://github.com/user-attachments/assets/39df02fe-e8e1-4ce5-b1e8-85996e8d7408" />
