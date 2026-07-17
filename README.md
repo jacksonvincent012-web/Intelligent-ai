@@ -109,7 +109,7 @@ https://vm-deploy.vercel.app/
 
 
 ```
-<img width="1920" height="1080" alt="Screenshot 2026-07-17 115403" src="https://github.com/user-attachments/assets/7ff9cebc-b92f-4fec-a260-a4d50809d9a2" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ae48c867-0d28-4c3a-9335-318c230c10ab" />
 
 AM SORRY NO CODE FOR U TO CLONE😁
 <img width="198" height="102" alt="Screenshot 2026-07-17 112600" src="https://github.com/user-attachments/assets/39df02fe-e8e1-4ce5-b1e8-85996e8d7408" />
