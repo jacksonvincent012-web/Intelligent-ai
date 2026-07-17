@@ -72,6 +72,15 @@ https://vm-deploy.vercel.app/
 - Hands-free interaction with voice commands
 
 <img width="469" height="186" alt="image" src="https://github.com/user-attachments/assets/8e534a12-2541-47b9-909f-cb20270b4547" />
+
+**Privacy & Anti-AI-Detection**
+- Local AI-score detector (perplexity, burstiness, repetition, flatness) — no API, no network.
+- **Humanize (H)** button rewrites any answer until the measured AI score drops to **≤3%**.
+- **Privacy mode** redacts text (default 5%) and strips PII before it leaves your PC.
+
+**Whiteboard**
+- Hand-written overlay that types the answer word-by-word with a pen cursor.
+- Global pen (✎) button replays the last answer on the whiteboard anytime.
 ---
 
 ## Architecture
@@ -114,6 +123,14 @@ https://vm-deploy.vercel.app/
 AM SORRY NO CODE FOR U TO CLONE😁
 <img width="198" height="102" alt="Screenshot 2026-07-17 112600" src="https://github.com/user-attachments/assets/39df02fe-e8e1-4ce5-b1e8-85996e8d7408" />
 
+
+---
+
+## Distribution
+
+- `V-Mind-Setup.zip` bundles the compiled `V-Mind.exe` + `install.ps1` + `update.ps1`. No source included.
+- Run `install.ps1` (elevated) to install to `C:\Program Files\V-Mind` with a Start Menu shortcut.
+- Auto-starts Ollama, auto-restarts the server if it crashes, falls back to the browser if the window fails.
 
 ---
 
