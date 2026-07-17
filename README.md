@@ -45,7 +45,7 @@ https://vm-deploy.vercel.app/
 - Autocomplete suggestions for search-as-you-type
 - Built-in web browser with iframe and text-rendering fallback
 <img width="960" height="1032" alt="Screenshot 2026-06-18 174307" src="https://github.com/user-attachments/assets/ecc0b695-0b44-4a5d-bf4f-e0586ef6feba" />
-the testing stage
+  the testing stage
 
 **The Layer**
 - Integrated Kali Linux command reference
