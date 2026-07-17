@@ -102,16 +102,7 @@ https://vm-deploy.vercel.app/
 │  │ (Local)  │  │ (Cloud)  │  │ / Wikipedia  │  │
 │  └──────────┘  └──────────┘  └──────────────┘  │
 └─────────────────────────────────────────────────┘
----
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `V_MIND_API_KEY` | API key for OpenRouter/OpenAI cloud models |
-| `V_MIND_API_BASE` | Custom API base URL (default: OpenRouter) |
-| `V_MIND_SHARE_TOKEN` | Optional auth token for sharing over network |
-| `OPENAI_API_KEY` | Alternative API key (fallback) |
+--
 
 ---
 
